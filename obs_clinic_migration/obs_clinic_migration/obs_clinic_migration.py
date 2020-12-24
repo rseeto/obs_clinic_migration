@@ -17,11 +17,12 @@ import numpy as np
 
 class RedcapConv:
     
+    
     def __init__(
         self, ravestub_redcap_dict, stub_repeat, master_df = rave_clinic, 
         redcap_data_dict = redcap_data_dict, recode_long = True
     ):
-        """Apply criteria to data set
+        """Apply criteria to data set.
         [summary]
 
         Args:
@@ -54,8 +55,7 @@ class RedcapConv:
         
     @staticmethod
     def _rave_wide_long(ravestub_redcap_dict, stub_repeat, master_df ):
-        """Convert RAVE dataframe from wide to long with 2 or more occurences
-        
+        """Convert RAVE dataframe from wide to long with 2 or more occurences.
         
         LONGER DESCRIPTION
         
@@ -84,7 +84,6 @@ class RedcapConv:
         # used the 'labels' fields, as opposed to the 'raw/coded' fields to minimize 
         # errors in transcription
         """
-     
         # create list of column names including iterations of stub 
         # (e.g. COL_1, COL_2)
         df_cols = ['Subject']
@@ -365,8 +364,7 @@ class RedcapConv:
 ##                    print(str(NameError))
 
     def _redcap_str_dict2(self, input_str):
-        
-        """Reverse REDCap Data Dictionary string
+        """Reverse REDCap Data Dictionary string.
         
         Coding for REDCap variables are stored in the 'Choices, Calculations, 
         OR Slider Labels' column of the data dictionary. This function reverses
@@ -389,16 +387,13 @@ class RedcapConv:
             as a new entry.
 
         """
-
         str_dict = {}
-       
         val_key_lst = input_str.split(' | ')
         
         for val_key in val_key_lst:
             val_key_split_lst = val_key.split(', ', 1)
             
             str_dict[str(val_key_split_lst[1])] = str(val_key_split_lst[0])
-            
            
         return(str_dict)
     
@@ -786,7 +781,7 @@ def rave_date_unknown(
     day_suffix = 'DD_',
       
 ):
-    """Add 'date unavailabe' column to RAVE dataframe
+    """Add 'date unavailabe' column to RAVE dataframe.
     
     The new REDCap database has a column which indicates if date was available 
     for some variables. An equivalent column may not exist in the RAVE 
@@ -1044,6 +1039,7 @@ def rave_convert_code_label(
         data_dict_var,
         data_dict_fields_df = rave_fields
 ):
+
     '''RAVE coded column to labelled column
     
     Args:

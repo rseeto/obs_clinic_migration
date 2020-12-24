@@ -19,3 +19,13 @@ $RECYCLE.BIN/
 
 # VS Code settings
 .vscode
+
+# Data is proprietary
+data
+
+# Python file which will be converted to notebook
+RAVE_to_REDCap_forms.py
+
+# tests pycache
+__pycache__
+.pytest_cache
