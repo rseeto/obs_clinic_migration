@@ -1,4 +1,4 @@
-  import pandas as pd         
+import pandas as pd         
 
 def rave_date_unknown(
     rave_df,
@@ -139,7 +139,8 @@ def rave_date_unknown(
 
 def create_specify_col(
         create_col, coded_col, label_col, label_code, label_ans,
-        df = rave_clinic
+        #df = rave_clinic
+        df
 ):
     '''
     Add 'please specify' column to RAVE dataframe
