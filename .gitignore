@@ -29,3 +29,6 @@ RAVE_to_REDCap_forms.py
 # tests pycache
 __pycache__
 .pytest_cache
+
+# Windows Enviroment file; used to set python path for custom modules
+.env

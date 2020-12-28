@@ -13,14 +13,22 @@ Created on Wed Apr 22 17:41:45 2020
 # import pyodbc
 import pandas as pd
 import numpy as np
+import obs_data_sets
+
+
+ 
+
+
+
 
 
 class RedcapConv:
     
     
     def __init__(
-        self, ravestub_redcap_dict, stub_repeat, master_df = rave_clinic, 
-        redcap_data_dict = redcap_data_dict, recode_long = True
+        self, ravestub_redcap_dict, stub_repeat, 
+        master_df = rave_clinic, redcap_data_dict = redcap_data_dict, 
+        recode_long = True
     ):
         """Apply criteria to data set.
         [summary]
@@ -195,7 +203,8 @@ class RedcapConv:
         
         # can I remove 'redcapnames' and just derive it from rave_long.columns.values.to_list()?
     def _recoded_based_redcap_data_dict(
-            self, rave_long, data_dict_df = redcap_data_dict
+            self, rave_long, 
+            data_dict_df = redcap_data_dict
     ):
         """Recode RAVE long dataframe based on REDcap data dictionary
         
@@ -496,9 +505,9 @@ class RedcapConv:
         # self.final_df = pd.concat(
         #     [import_temp, self.data], 
         #     axis = 1, ignore_index = True, sort = False)
-    def change_str(self, # should be change_str_val
+    def change_str(self, spelling_dict, data_dict_df = redcap_data_dict# should be change_str_val
                    #df_to_be_modified, # add this instead of self reference
-                   spelling_dict, data_dict_df = redcap_data_dict):
+                   ):
         """Manually change initilized data set
         
         
