@@ -15,38 +15,13 @@ import pandas as pd
 import numpy as np
 import obs_data_sets
 
-
- 
-rave_clinic = pd.read_csv(
-    ('D:/Downloads/WorkFromHome/OBS Flat Output 09SEP2019_475.csv'), 
-    encoding = 'mbcs', 
-    low_memory = False,
-    dtype = str # temporary addition, see if this is causing issues
-)
-
-
-redcap_data_dict = pd.read_csv(
-    (
-        'D:/Downloads/WorkFromHome/obs_data_migration/clinic/data/'
-         #'OBS_DataDictionary_2019-08-20.csv'
-         'OBSUAT_DataDictionary_2020-05-13.csv'
-    ), 
-    #encoding = 'mbcs', 
-    low_memory = False,
-    dtype = str,
-    #sep = ',',
-    #quotechar='"'
-)   
-
-
-
-
 class RedcapConv:
     
     
     def __init__(
         self, ravestub_redcap_dict, stub_repeat, 
-        master_df = rave_clinic, redcap_data_dict = redcap_data_dict, 
+        master_df = obs_data_sets.rave_clinic, 
+        redcap_data_dict = obs_data_sets.redcap_data_dict, 
         recode_long = True
     ):
         """Apply criteria to data set.
@@ -151,6 +126,11 @@ class RedcapConv:
         sub_df.rename(columns = ravestub_redcap_dict, inplace = True)
         sub_df.rename(columns = {'Subject': 'obs_id'}, inplace = True)
         
+        # added post import DEC2020; check to make sure this still works
+        sub_df['redcap_repeat_instance'] = (
+            sub_df['redcap_repeat_instance'].astype(str)
+        )
+        
         return sub_df
     
     
@@ -223,7 +203,7 @@ class RedcapConv:
         # can I remove 'redcapnames' and just derive it from rave_long.columns.values.to_list()?
     def _recoded_based_redcap_data_dict(
             self, rave_long, 
-            data_dict_df = redcap_data_dict
+            data_dict_df = obs_data_sets.redcap_data_dict
     ):
         """Recode RAVE long dataframe based on REDcap data dictionary
         
@@ -524,7 +504,7 @@ class RedcapConv:
         # self.final_df = pd.concat(
         #     [import_temp, self.data], 
         #     axis = 1, ignore_index = True, sort = False)
-    def change_str(self, spelling_dict, data_dict_df = redcap_data_dict# should be change_str_val
+    def change_str(self, spelling_dict, data_dict_df = obs_data_sets.redcap_data_dict# should be change_str_val
                    #df_to_be_modified, # add this instead of self reference
                    ):
         """Manually change initilized data set
@@ -594,7 +574,7 @@ class RedcapConv:
     def compare_conv_dde(self, redcap_dde,   
                           #selected_subjects #probably don't need this; used to identify subjects with minized NA but will use the converted clinic dataframe to subset redcap dataframe
                           additional_ignore_cols = [],
-                          data_dict_df = redcap_data_dict,
+                          data_dict_df = obs_data_sets.redcap_data_dict,
                           remove_text_cols = False):
         """Compare converted RAVE data to double data entry REDCap
 

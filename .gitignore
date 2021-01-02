@@ -32,3 +32,6 @@ __pycache__
 
 # Windows Enviroment file; used to set python path for custom modules
 .env
+
+# contains permission from OBS/SHS to publish on GitHub
+Github_Publication.zip

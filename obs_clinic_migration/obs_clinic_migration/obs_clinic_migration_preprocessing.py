@@ -193,8 +193,7 @@ def create_specify_col(
         
     df[create_col] = np.NaN
     df.loc[
-        df[coded_col] == label_code,
-        create_col
+        df[coded_col] == label_code, create_col
     ] = df[label_col][
         df[coded_col] == label_code
     ]
