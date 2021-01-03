@@ -16,6 +16,8 @@ import numpy as np
 import obs_data_sets
 
 class RedcapConv:
+    """[summary]
+    """
     
     
     def __init__(
@@ -24,14 +26,13 @@ class RedcapConv:
         redcap_data_dict = obs_data_sets.redcap_data_dict, 
         recode_long = True
     ):
-        """Apply criteria to data set.
-        [summary]
+        """ Convert Rave dataframe to REDCap
 
         Args:
             ravestub_redcap_dict ([type]): [description]
             stub_repeat ([type]): [description]
-            master_df ([type], optional): [description]. Defaults to rave_clinic.
-            redcap_data_dict ([type], optional): [description]. Defaults to redcap_data_dict.
+            master_df ([type], optional): [description]. Defaults to obs_data_sets.rave_clinic.
+            redcap_data_dict ([type], optional): [description]. Defaults to obs_data_sets.redcap_data_dict.
             recode_long (bool, optional): [description]. Defaults to True.
         """
         if stub_repeat == 0:
@@ -246,15 +247,12 @@ class RedcapConv:
             # only prints value counts if there is a REDCap coding information
                 try:
                     rave_long[redcap_var_name] = (
-                        rave_long[redcap_var_name].astype(str).replace(redcap_data_dict_value_rev)
+                        rave_long[redcap_var_name].astype(str).replace(
+                            redcap_data_dict_value_rev
+                        )
                     )
                     
-                    
                     rave_long_counts = rave_long[redcap_var_name].value_counts()
-                    
-                    
-                    
-                    
                     
                     # print(rave_long_counts)
                     for value_count_index in rave_long_counts.index:
@@ -485,25 +483,46 @@ class RedcapConv:
            
     #     #return(str_dict)
     
-    def prep_imp(self, event_name, 
+    def prep_imp(self, event_name, complete_col, repeat_instrument = None
                  
                  #access_group, 
-                 complete_col, 
-                 #import_temp
-                 repeat_instrument = None
+                  
+                 #import_temp,
+                 
     ):
-        self.data['redcap_event_name'] = event_name
+        """ Prepare data file for REDCap import
+
+        Adds columns necessary to import into REDCap. Also reorganizes columns.
+
+        Notes:
+            Method is performed after double data check as REDCap does it's own 
+            data validation. When attempting to import data into REDCap, won't 
+            be successful if the column names are incorrectly named or ordered.
+
+        Args:
+            event_name (str): REDCap divides the project into events. They are 
+                roughly equivalent to how the RAVE data was divided.
+            complete_col (str): REDCap has a column to indicate the event is 
+                complete.
+            repeat_instrument (str, optional): REDCap has a column for repeat 
+                instances. Defaults to None.
+        """
         #self.data['redcap_data_access_group'] = access_group
+        self.data['redcap_event_name'] = event_name
         self.data[complete_col] = '2'
         if repeat_instrument is not None:
             self.data['redcap_repeat_instrument'] = repeat_instrument
-       
         
+        # move obs_id column; REDCap raises error if not in the expected order
         obs_col = self.data.pop('obs_id')
         self.data.insert(0, 'obs_id', obs_col)
+        
         # self.final_df = pd.concat(
         #     [import_temp, self.data], 
         #     axis = 1, ignore_index = True, sort = False)
+
+
+
     def change_str(self, spelling_dict, data_dict_df = obs_data_sets.redcap_data_dict# should be change_str_val
                    #df_to_be_modified, # add this instead of self reference
                    ):
@@ -559,7 +578,9 @@ class RedcapConv:
             try:
                 # replace column values with the 'correct' values (values associated with a REDCap dictionary value)
                 self.data[key] = self.data[key].astype(str).replace(val)
-                self.data[key] = self.data[key].astype(str).replace(redcap_data_dict_value_rev)
+                self.data[key] = (
+                    self.data[key].astype(str).replace(redcap_data_dict_value_rev)
+                )
 #                    self.data[redcapname] = self.data[redcapname].replace(redcap_data_dict_value_rev)
                 self.data.replace('nan', np.nan, regex = True, inplace = True)
                 
@@ -730,10 +751,12 @@ class RedcapConv:
 
         
         data_wo_cols = data_wo_na[relevant_cols]
-        data_wo_0 = data_wo_na.loc[~(data_wo_cols.astype(str).replace({'nan': '0'}) == '0').all(axis=1)]
         
+        
+        data_wo_0 = data_wo_na.loc[
+            ~(data_wo_cols.astype(str).replace({'nan': '0'}) == '0').all(axis=1)
+        ]
         #data_wo_0 = data_w_na.loc[((data_wo_cols != '0')).any(axis=1)]
-        
         data_wo = data_wo_0.dropna(subset = list(relevant_cols), how = 'all')
         #data_wo = data_wo_0.replace({'nan': np.nan}).dropna(subset = list(relevant_cols), how = 'all')
         
