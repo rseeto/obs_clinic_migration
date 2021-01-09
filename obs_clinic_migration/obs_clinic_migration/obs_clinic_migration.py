@@ -523,19 +523,14 @@ class RedcapConv:
 
 
 
-    def change_str(self, spelling_dict, data_dict_df = obs_data_sets.redcap_data_dict# should be change_str_val
-                   #df_to_be_modified, # add this instead of self reference
-                   ):
-        """Manually change initilized data set
-        
-        
-        changes the values in processed data set (self.data) which have altered spellings compared to the redcap data dictioanry
-        
+    def change_str(
+        self, spelling_dict, data_dict_df = obs_data_sets.redcap_data_dict
+    ):
+        """Manually change column values after initilizing data set
         
         Manually change the values in processed data set (self.data) which 
         have altered spellings compared to the REDCap data dictioanry and 
         are not automatically updated as a result.
-        
         
         Args:
             spelling_dict: A dictionary of dictionaries. The key of the 
@@ -556,10 +551,7 @@ class RedcapConv:
         Returns:
             Data frame is modified but nothing is returned
 
-        """
-        
-        #df_to_be_modified = self.data
-        
+        """        
         for key, val in spelling_dict.items():
             redcap_data_dict_value = data_dict_df.loc[
                 data_dict_df['Variable / Field Name'] == key, 
@@ -573,14 +565,17 @@ class RedcapConv:
                 # associated with a REDCap dictionary value)
                 self.data[key] = self.data[key].astype(str).replace(val)
                 self.data[key] = (
-                    self.data[key].astype(str).replace(redcap_data_dict_value_rev)
+                    self.data[key].astype(str).replace(
+                        redcap_data_dict_value_rev
+                    )
                 )
-#                    self.data[redcapname] = self.data[redcapname].replace(redcap_data_dict_value_rev)
                 self.data.replace('nan', np.nan, regex = True, inplace = True)
                 
                 print(self.data[key].value_counts())
             except Exception as ex:
-                template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                template = (
+                    "An exception of type {0} occurred. Arguments:\n{1!r}"
+                )
                 message = template.format(type(ex).__name__, ex.args)
                 print ('\n')
                 print (key)

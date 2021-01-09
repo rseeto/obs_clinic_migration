@@ -118,7 +118,51 @@ def test_pytest_imp():
 
 
 def test_change_str():
-    assert True
+    actual = obs_clinic_migration.RedcapConv(
+        ravestub_redcap_dict = {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng'
+        }, 
+        stub_repeat = 0, 
+        master_df = pd.DataFrame(
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'NO', 'Noo'], 
+                'col2': ['No', 'No', 'Yes', 'YES']
+            }
+        ),
+        recode_long = True
+    )
+    expected_unchanged_df = pd.DataFrame(
+        {
+            'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+            'incl_main_ga': ['2', '2', 'NO', 'Noo'], 
+            'incl_main_eng': ['1', '1', '2', 'YES']
+        }
+    )
+    # check that data is initially incorrect
+    for col_name in actual.data.columns.values.tolist():
+        assert all(actual.data[col_name] == expected_unchanged_df[col_name])
+    actual.change_str({
+        'incl_main_ga': {
+            'Noo': 'No',
+            'NO': 'No'
+        },
+        'incl_main_eng': {
+            'YES': 'Yes'
+        } 
+    })
+    expected_changed_df = pd.DataFrame(
+        {
+            'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+            'incl_main_ga': ['2', '2', '1', '1'], 
+            'incl_main_eng': ['1', '1', '2', '2']
+        }
+    )
+    # check that data is corrected
+    for col_name in actual.data.columns.values.tolist():
+        assert all(actual.data[col_name] == expected_changed_df[col_name])
+    
 
 def test_compare_conv_dde():
     assert True
