@@ -558,14 +558,7 @@ class RedcapConv:
 
         """
         
-        
-        
-        
         #df_to_be_modified = self.data
-        
-        
-        
-        
         
         for key, val in spelling_dict.items():
             redcap_data_dict_value = data_dict_df.loc[
@@ -576,7 +569,8 @@ class RedcapConv:
                 redcap_data_dict_value
             )
             try:
-                # replace column values with the 'correct' values (values associated with a REDCap dictionary value)
+                # replace column values with the 'correct' values (values 
+                # associated with a REDCap dictionary value)
                 self.data[key] = self.data[key].astype(str).replace(val)
                 self.data[key] = (
                     self.data[key].astype(str).replace(redcap_data_dict_value_rev)
@@ -736,30 +730,25 @@ class RedcapConv:
         return eval_df
     def remove_na(self):
         """Remove rows that don't contain relevant data
+
+        Removes rows of the processed data frame, excluding 'obs_id' and 
+        'redcap_repeat_instance', which contain only NaN, 'nan' or '0'
         
         # https://stackoverflow.com/questions/40659212/futurewarning-elementwise-comparison-failed-returning-scalar-but-in-the-futur
         """
         data_w_na = self.data
-        # remove columns not expected to have 0s/nas
-       
-        relevant_cols = data_w_na.columns[~data_w_na.columns.isin([
-            'obs_id','redcap_repeat_instance'
-        ])]
-        
+
+        relevant_cols = data_w_na.columns[~data_w_na.columns.isin(
+            ['obs_id','redcap_repeat_instance']
+        )]
         
         data_wo_na = data_w_na.dropna(subset = list(relevant_cols), how = 'all')
-
-        
         data_wo_cols = data_wo_na[relevant_cols]
-        
-        
+        # still contains 'nan' strings, convert to '0' and remove
         data_wo_0 = data_wo_na.loc[
             ~(data_wo_cols.astype(str).replace({'nan': '0'}) == '0').all(axis=1)
         ]
-        #data_wo_0 = data_w_na.loc[((data_wo_cols != '0')).any(axis=1)]
         data_wo = data_wo_0.dropna(subset = list(relevant_cols), how = 'all')
-        #data_wo = data_wo_0.replace({'nan': np.nan}).dropna(subset = list(relevant_cols), how = 'all')
-        
         
         self.data = data_wo
         
@@ -783,8 +772,7 @@ class RedcapConv:
         if not compare_df.empty:
             for obs_id in compare_df['obs_id'].unique():
                 for eval_col in eval_cols:
-                
-                
+                  
                     redcap_clinic_sub_id = redcap_clinic.loc[
                         redcap_clinic['obs_id'].isin([obs_id]),
                         ['obs_id', eval_col]

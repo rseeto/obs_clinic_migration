@@ -2,6 +2,7 @@
 import pandas as pd
 import obs_clinic_migration
 import pytest
+import numpy as np
 
 param_RedcapCov_init = [
     (# stub_repeat = 0; recode_long = True
@@ -116,6 +117,128 @@ def test_pytest_imp():
     assert True
 
 
+def test_change_str():
+    assert True
+
+def test_compare_conv_dde():
+    assert True
+
+
+param_remove_na = [
+    (# replace np.NaN
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng'
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', np.NaN], 
+                'col2': ['No', 'No', 'Yes', np.NaN]
+            }
+        ),
+        True,
+        pd.DataFrame(# expected df
+            {
+                'obs_id': ['10100001', '10100002', '10100003'],
+                'incl_main_ga': ['2', '2', '1'], 
+                'incl_main_eng': ['1', '1', '2']
+            }
+        )
+    ),
+    (# replace '0'
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng'
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', '0'], 
+                'col2': ['No', 'No', 'Yes', '0']
+            }
+        ),
+        True,
+        pd.DataFrame(# expected df
+            {
+                'obs_id': ['10100001', '10100002', '10100003'],
+                'incl_main_ga': ['2', '2', '1'], 
+                'incl_main_eng': ['1', '1', '2']
+            }
+        )
+    ),
+    (# replace np.NaN and '0'
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng'
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', np.NaN], 
+                'col2': ['No', 'No', 'Yes', '0']
+            }
+        ),
+        True,
+        pd.DataFrame(# expected df
+            {
+                'obs_id': ['10100001', '10100002', '10100003'],
+                'incl_main_ga': ['2', '2', '1'], 
+                'incl_main_eng': ['1', '1', '2']
+            }
+        )
+    ),
+    (# stub_repeat = 2; recode_long = True
+        {
+            'col1_': 'incl_main_ga'
+        },
+        2,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002'],
+                'col1_1': ['Yes', 'No'], 
+                'col1_2': ['Yes', np.NaN]
+            }
+        ),
+        True,
+        pd.DataFrame(# expected df
+            {
+                'obs_id': ['10100001', '10100002', '10100001'],
+                'redcap_repeat_instance': ['1', '1', '2'],
+                'incl_main_ga': ['2', '1', '2']
+            }
+        )
+    )
+]
+
+@pytest.mark.parametrize(
+    'ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, expected_df_4', 
+    param_remove_na
+)
+
+def test_remove_na(
+    ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, expected_df_4
+):
+    actual = obs_clinic_migration.RedcapConv(
+        ravestub_redcap_dict = ref_dict_4, 
+        stub_repeat = stub_repeat_4, 
+        master_df = sample_raw_df_4,
+        recode_long = recode_bool_4
+    )
+    actual.remove_na()
+    actual_df = actual.data
+
+    for col_name in actual_df.columns.values.tolist():
+        assert all(actual_df[col_name] == expected_df_4[col_name])
+
+
+def test_find_cols_issue():
+    assert True
+
+
 
 param_prep_imp = [
     ( # stub_repeat = 0; recode_long = False
@@ -205,15 +328,3 @@ def test_prep_imp(
     for col_name in expected_df_2.columns.values.tolist():
         assert all(actual_df[col_name] == expected_df_2[col_name])
     assert(actual_df.columns.tolist() == expected_cols_2)
-
-def test_change_str():
-    assert True
-
-def test_compare_conv_dde():
-    assert True
-
-def test_remove_na():
-    assert True
-
-def test_find_cols_issue():
-    assert True
