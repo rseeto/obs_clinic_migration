@@ -1,4 +1,5 @@
-import pandas as pd         
+import pandas as pd
+import numpy as np    
 
 def rave_date_unknown(
     rave_df,
@@ -142,6 +143,7 @@ def create_specify_col(
         #df = rave_clinic
         df
 ):
+
     '''
     Add 'please specify' column to RAVE dataframe
     
@@ -159,7 +161,7 @@ def create_specify_col(
     label_col : str
         Name of column containing the label values.
     label_code : str
-        Coded value that corresponds to the'please specify' value
+        Coded value that corresponds to the 'please specify' value
     label_ans : str
         Corrected label associated with the 'please specify' value. This value 
         will replace the 'please specify' value in the column with the label 
@@ -192,16 +194,11 @@ def create_specify_col(
     #     df[create_col] = np.NaN
         
     df[create_col] = np.NaN
-    df.loc[
-        df[coded_col] == label_code, create_col
-    ] = df[label_col][
-        df[coded_col] == label_code
-    ]
+    df.loc[df[coded_col] == label_code, create_col] = (
+        df[label_col][df[coded_col] == label_code]
+    )
         
-    df.loc[
-        df[coded_col] == label_code,
-        label_col
-    ] = label_ans
+    df.loc[df[coded_col] == label_code, label_col] = label_ans
     
     return df
    
