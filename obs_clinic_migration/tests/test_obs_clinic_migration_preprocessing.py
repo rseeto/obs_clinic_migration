@@ -3,6 +3,58 @@ import obs_clinic_migration_preprocessing
 import pytest
 import numpy as np
 
+def test_rave_date_unknown():
+    test_df = pd.DataFrame(
+        {
+            'date_dependency_col_1': ['No', 'Yes'],
+            'date_stub_YYYY_1': ['2000', '1900'],
+            'date_stub_MM_1': ['1', np.NaN],
+            'date_stub_DD_1': ['1', np.NaN],
+            'date_dependency_col_2': ['No', 'Yes'],
+            'date_stub_YYYY_2': ['2000', '99'],
+            'date_stub_MM_2': ['1', np.NaN],
+            'date_stub_DD_2': ['1', np.NaN],
+            'date_dependency_col_3': ['No', 'Yes'],
+            'date_stub_YYYY_3': ['2000', '2000'],
+            'date_stub_MM_3': ['1', '1'],
+            'date_stub_DD_3': ['1', '1'],
+        }
+    )
+    actual_df = obs_clinic_migration_preprocessing.rave_date_unknown(
+        rave_df = test_df, 
+        date_dependency = 'date_dependency_col_', 
+        dependency_answer = 'Yes',
+        rave_date_stub = 'date_stub_', 
+        max_occur_num = 3
+    )
+    expected_df = pd.DataFrame(
+        {
+            'date_dependency_col_1': ['No', 'Yes'],
+            'date_stub_YYYY_1': ['2000', np.NaN],
+            'date_stub_MM_1': ['1', np.NaN],
+            'date_stub_DD_1': ['1', np.NaN],
+            'date_dependency_col_2': ['No', 'Yes'],
+            'date_stub_YYYY_2': ['2000', '99'],
+            'date_stub_MM_2': ['1', '99'],
+            'date_stub_DD_2': ['1', '99'],
+            'date_dependency_col_3': ['No', 'Yes'],
+            'date_stub_YYYY_3': ['2000', '2000'],
+            'date_stub_MM_3': ['1', '1'],
+            'date_stub_DD_3': ['1', '1'],
+            'date_stub_yn_date_1': ['Yes', 'No'],
+            'date_stub_yn_date_2': ['Yes', 'Yes'],
+            'date_stub_yn_date_3': ['Yes', 'Yes'],
+        }
+    )
+    # does not check data type due to np.NaN == np.NaN returning false
+    # for col_name in actual_df.columns.values.tolist():
+    #     assert all(
+    #         actual_df[col_name].astype('str') == (
+    #             expected_df[col_name].astype('str')
+    #         )
+    #     )
+    assert actual_df.equals(expected_df)
+
 def test_create_specify_col():
     test_df = pd.DataFrame(
         {
@@ -28,9 +80,10 @@ def test_create_specify_col():
         }
     )
     # does not check data type due to np.NaN == np.NaN returning false
-    for col_name in actual_df.columns.values.tolist():
-        assert all(
-            actual_df[col_name].astype('str') == (
-                expected_df[col_name].astype('str')
-            )
-        )
+    # for col_name in actual_df.columns.values.tolist():
+    #     assert all(
+    #         actual_df[col_name].astype('str') == (
+    #             expected_df[col_name].astype('str')
+    #         )
+    #     )
+    assert actual_df.equals(expected_df)

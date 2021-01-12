@@ -30,7 +30,7 @@ def rave_date_unknown(
             associated dates
         rave_date_stub: variable name which contains the date stub field 
             portion without the associated date specifics and iteration. For
-            example, the date_ependency field 'MEDHX_NY_' is associated with 
+            example, the date_dependency field 'MEDHX_NY_' is associated with 
             'ONSET_YR_' (i.e. rave_date_stub). 'ONSET_YR_' will be concatenated
             with year_suffix, month_suffix, or day_suffix, and iterable 
             (<= max_occur_num) to determine the associated date field - 
@@ -69,20 +69,16 @@ def rave_date_unknown(
                 )
                 | (rave_df[rave_date_month + str(occur_num)].notna())
                 | (rave_df[rave_date_day + str(occur_num)].notna())
-            ),
-            (rave_date_known_col_name + str(occur_num))     
-        ] = 'Yes'
-        
+            ), (rave_date_known_col_name + str(occur_num))     
+        ] = 'Yes' 
         
         rave_df.loc[
             (
                 (rave_df[date_dependency + str(occur_num)] == dependency_answer)
                 & (rave_df[date_dependency + str(occur_num)].notna())
                 & (rave_df[rave_date_known_col_name + str(occur_num)].isna())
-            ),
-            (rave_date_known_col_name + str(occur_num))     
-        ] = 'No'
-        
+            ), (rave_date_known_col_name + str(occur_num))     
+        ] = 'No' 
         
         rave_df.loc[
             (
@@ -90,8 +86,7 @@ def rave_date_unknown(
                     (rave_df[rave_date_known_col_name + str(occur_num)] == 'Yes')
                     & (rave_df[rave_date_year + str(occur_num)] == '1900')
                 )
-            ),
-            (rave_date_year + str(occur_num))
+            ), (rave_date_year + str(occur_num))
         ] = '99'
         
         rave_df.loc[
@@ -100,20 +95,18 @@ def rave_date_unknown(
                     (rave_df[rave_date_known_col_name + str(occur_num)] == 'No')
                     & (rave_df[rave_date_year + str(occur_num)] == '1900')
                 )
-            ),
-            (rave_date_year + str(occur_num))
+            ), (rave_date_year + str(occur_num))
         ] = np.NaN
     
         for date_val in [rave_date_month, rave_date_day]:
-                rave_df.loc[
+            rave_df.loc[
+                (
                     (
-                        (
-                            (rave_df[rave_date_known_col_name + str(occur_num)] == 'Yes')
-                            & (rave_df[date_val + str(occur_num)].isna())
-                        )
-                    ),
-                    (date_val + str(occur_num))
-                ] = '99'
+                        (rave_df[rave_date_known_col_name + str(occur_num)] == 'Yes')
+                        & (rave_df[date_val + str(occur_num)].isna())
+                    )
+                ), (date_val + str(occur_num))
+            ] = '99'
     
     return rave_df
             
@@ -139,9 +132,8 @@ def rave_date_unknown(
 
 
 def create_specify_col(
-        create_col, coded_col, label_col, label_code, label_ans,
-        #df = rave_clinic
-        df
+    create_col, coded_col, label_col, label_code, label_ans, df
+        #df = rave_clinic       
 ):
 
     '''
