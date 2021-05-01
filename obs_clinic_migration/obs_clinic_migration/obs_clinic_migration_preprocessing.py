@@ -82,53 +82,31 @@ def rave_date_unknown(
         
         rave_df.loc[
             (
-                (
-                    (rave_df[rave_date_known_col_name + str(occur_num)] == 'Yes')
-                    & (rave_df[rave_date_year + str(occur_num)] == '1900')
-                )
+                (rave_df[rave_date_known_col_name + str(occur_num)] == 'Yes')
+                & (rave_df[rave_date_year + str(occur_num)] == '1900')
             ), (rave_date_year + str(occur_num))
         ] = '99'
         
         rave_df.loc[
             (
-                (
-                    (rave_df[rave_date_known_col_name + str(occur_num)] == 'No')
-                    & (rave_df[rave_date_year + str(occur_num)] == '1900')
-                )
+                (rave_df[rave_date_known_col_name + str(occur_num)] == 'No')
+                & (rave_df[rave_date_year + str(occur_num)] == '1900')
             ), (rave_date_year + str(occur_num))
         ] = np.NaN
     
         for date_val in [rave_date_month, rave_date_day]:
             rave_df.loc[
                 (
-                    (
-                        (rave_df[rave_date_known_col_name + str(occur_num)] == 'Yes')
-                        & (rave_df[date_val + str(occur_num)].isna())
+                    (rave_df
+                        [
+                            rave_date_known_col_name + str(occur_num)
+                        ] == 'Yes'
                     )
+                    & (rave_df[date_val + str(occur_num)].isna())
                 ), (date_val + str(occur_num))
             ] = '99'
     
     return rave_df
-            
-            
-            # for obs_id in compare_df['obs_id'].unique():
-            #     redcap_clinic_sub_id = redcap_clinic.loc[
-            #         redcap_clinic['obs_id'].isin([obs_id]),
-            #     ]
-                
-
-            #     for eval_col in eval_cols:
-            #         eval_ignore_cols = ignore_cols + [eval_col]
-                    
-            #         if self.compare_conv_dde(
-            #             redcap_clinic_sub_id, 
-            #             eval_ignore_cols
-            #         ).empty:
-                        
-                        
-            #             print(str(obs_id), ": ", str(eval_col))
-            #             print("Subject '{}' has an issue with the column '{}'.".format(obs_id, eval_col))
-
 
 
 def create_specify_col(

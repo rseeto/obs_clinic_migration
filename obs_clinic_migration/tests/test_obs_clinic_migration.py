@@ -98,7 +98,7 @@ param_RedcapCov_init = [
     param_RedcapCov_init
 )
 
-def test_RedcapConv_init_param(
+def test_RedcapConv_init(
     ref_dict_1, stub_repeat_1, sample_raw_df_1, recode_bool_1, expected_df_1
 ):
     actual_df = obs_clinic_migration.RedcapConv(
@@ -164,8 +164,6 @@ def test_change_str():
         assert all(actual.data[col_name] == expected_changed_df[col_name])
     
 
-def test_compare_conv_dde():
-    assert True
 
 
 param_remove_na = [
@@ -259,25 +257,223 @@ param_remove_na = [
 ]
 
 @pytest.mark.parametrize(
-    'ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, expected_df_4', 
+    'ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, expected_df_2', 
     param_remove_na
 )
 
 def test_remove_na(
-    ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, expected_df_4
+    ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, expected_df_2
 ):
     actual = obs_clinic_migration.RedcapConv(
-        ravestub_redcap_dict = ref_dict_4, 
-        stub_repeat = stub_repeat_4, 
-        master_df = sample_raw_df_4,
-        recode_long = recode_bool_4
+        ravestub_redcap_dict = ref_dict_2, 
+        stub_repeat = stub_repeat_2, 
+        master_df = sample_raw_df_2,
+        recode_long = recode_bool_2
     )
     actual.remove_na()
     actual_df = actual.data
 
     for col_name in actual_df.columns.values.tolist():
-        assert all(actual_df[col_name] == expected_df_4[col_name])
+        assert all(actual_df[col_name] == expected_df_2[col_name])
 
+param_compare_conv_dde = [
+    (# successful conversion, no columns ignored
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng',
+            'col3': 'incl_main_age',
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col2': ['No', 'No', 'Yes', 'Yes'],
+                'col3': ['Yes', 'No', 'Yes', 'Yes']
+            }
+        ),
+        True,
+        pd.DataFrame(# redcap double data entry
+            {
+                'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_eng': ['1', '1', '2', '2'],
+                'incl_main_age': ['2', '1', '2', '2']
+            }
+        ),
+        [],
+        pd.DataFrame(# expected df
+            {
+                'obs_id': [],
+                'incl_main_ga': [], 
+                'incl_main_eng': [],
+                'incl_main_age': [],
+                'Source': []
+            }
+        )
+    ),
+    (# successful conversion, 2 columns ignored
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng',
+            'col3': 'incl_main_age',
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col2': ['No', 'No', 'Yes', 'Yes'],
+                'col3': ['Yes', 'No', 'Yes', 'Yes']
+            }
+        ),
+        True,
+        pd.DataFrame(# redcap double data entry
+            {
+                'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_eng': ['1', '1', '2', '2'],
+                'incl_main_age': ['2', '1', '2', '2']
+            }
+        ),
+        ['incl_main_eng', 'incl_main_age'],
+        pd.DataFrame(# expected df
+            {
+                'obs_id': [],
+                'incl_main_ga': [],
+                'Source': []
+            }
+        )
+    ),
+    (# successful conversion after ignoring column
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng',
+            'col3': 'incl_main_age',
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col2': ['No', 'No', 'Yes', 'Yes'],
+                'col3': ['Yes', 'No', 'Yes', 'Yes']
+            }
+        ),
+        True,
+        pd.DataFrame(# redcap double data entry
+            {
+                'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_eng': ['1', '1', '2', '2'],
+                'incl_main_age': ['2', '1', '2', '1'] # difference in last value
+            }
+        ),
+        ['incl_main_age'],
+        pd.DataFrame(# expected df
+            {
+                'obs_id': [],
+                'incl_main_ga': [], 
+                'incl_main_eng': [],
+                'Source': []
+            }
+        )
+    ),
+    (# unsuccessful conversion, no columns ignored
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng',
+            'col3': 'incl_main_age',
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col2': ['No', 'No', 'Yes', 'Yes'],
+                'col3': ['Yes', 'No', 'Yes', 'Yes']
+            }
+        ),
+        True,
+        pd.DataFrame(# redcap double data entry
+            {
+                'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_eng': ['1', '1', '2', '2'],
+                'incl_main_age': ['2', '1', '2', '1'] # difference in last value
+            }
+        ),
+        [],
+        pd.DataFrame(# expected df
+            {
+                'obs_id': ['10100004', '10100004'],
+                'incl_main_ga': ['1', '1'], 
+                'incl_main_eng': ['2', '2'],
+                'incl_main_age': ['1', '2'], # difference in last value
+                'Source': ['REDCapDDE', 'RaveConverted']
+            }
+        )
+    ),
+    (# unsuccessful conversion, columns ignored
+        {
+            'col1': 'incl_main_ga', 
+            'col2': 'incl_main_eng',
+            'col3': 'incl_main_age',
+        },
+        0,
+        pd.DataFrame(# pandas sample raw df
+            {
+                'Subject': ['10100001', '10100002', '10100003', '10100004'],
+                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col2': ['No', 'No', 'Yes', 'Yes'],
+                'col3': ['Yes', 'No', 'Yes', 'Yes']
+            }
+        ),
+        True,
+        pd.DataFrame(# redcap double data entry
+            {
+                'obs_id': ['10100001', '10100002', '10100003', '10100004'],
+                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_eng': ['1', '1', '2', '2'],
+                'incl_main_age': ['2', '1', '2', '1'] # difference in last value
+            }
+        ),
+        ['incl_main_eng'],
+        pd.DataFrame(# expected df
+            {
+                'obs_id': ['10100004', '10100004'],
+                'incl_main_ga': ['1', '1'],
+                'incl_main_age': ['1', '2'], # difference in last value
+                'Source': ['REDCapDDE', 'RaveConverted']
+            }
+        )
+    ),
+]
+
+@pytest.mark.parametrize(
+    'ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3, additional_ignore_cols_3, expected_df_3', 
+    param_compare_conv_dde
+)
+
+
+def test_compare_conv_dde(
+    ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3, additional_ignore_cols_3, expected_df_3
+):
+    initialized_class = obs_clinic_migration.RedcapConv(
+        ravestub_redcap_dict = ref_dict_3, 
+        stub_repeat = stub_repeat_3, 
+        master_df = sample_raw_df_3,
+        recode_long = recode_bool_3
+    )
+    actual_df = initialized_class.compare_conv_dde(
+        redcap_dde = redcap_dde_3,
+        additional_ignore_cols = additional_ignore_cols_3
+    )
+    # don't care about index
+    actual_df.reset_index(drop=True, inplace=True)
+    
+    for col_name in actual_df.columns.values.tolist():
+        assert all(actual_df[col_name] == expected_df_3[col_name])
 
 def test_find_cols_issue():
     assert True
@@ -345,29 +541,29 @@ param_prep_imp = [
 
 @pytest.mark.parametrize(
     (
-        'ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, '
-        'event_name_2, complete_col_2, repeat_instrument_2, expected_df_2, '
-        'expected_cols_2'
+        'ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, '
+        'event_name_4, complete_col_4, repeat_instrument_4, expected_df_4, '
+        'expected_cols_4'
     ), param_prep_imp
 )
 
 def test_prep_imp(
-    ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, event_name_2, 
-    complete_col_2, repeat_instrument_2, expected_df_2, expected_cols_2
+    ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, event_name_4, 
+    complete_col_4, repeat_instrument_4, expected_df_4, expected_cols_4
 ):
     actual = obs_clinic_migration.RedcapConv(
-        ravestub_redcap_dict = ref_dict_2, 
-        stub_repeat = stub_repeat_2, 
-        master_df = sample_raw_df_2,
-        recode_long = recode_bool_2
+        ravestub_redcap_dict = ref_dict_4, 
+        stub_repeat = stub_repeat_4, 
+        master_df = sample_raw_df_4,
+        recode_long = recode_bool_4
     )
     actual.prep_imp(
-        event_name = event_name_2, 
-        complete_col = complete_col_2, 
-        repeat_instrument = repeat_instrument_2
+        event_name = event_name_4, 
+        complete_col = complete_col_4, 
+        repeat_instrument = repeat_instrument_4
     )
     actual_df = actual.data
     
-    for col_name in expected_df_2.columns.values.tolist():
-        assert all(actual_df[col_name] == expected_df_2[col_name])
-    assert(actual_df.columns.tolist() == expected_cols_2)
+    for col_name in expected_df_4.columns.values.tolist():
+        assert all(actual_df[col_name] == expected_df_4[col_name])
+    assert(actual_df.columns.tolist() == expected_cols_4)

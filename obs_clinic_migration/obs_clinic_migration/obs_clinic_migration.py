@@ -584,8 +584,9 @@ class RedcapConv:
     def compare_conv_dde(self, redcap_dde,   
                           #selected_subjects #probably don't need this; used to identify subjects with minized NA but will use the converted clinic dataframe to subset redcap dataframe
                           additional_ignore_cols = [],
-                          data_dict_df = obs_data_sets.redcap_data_dict,
-                          remove_text_cols = False):
+                          #data_dict_df = obs_data_sets.redcap_data_dict, # this isn't used in the current form
+                          #remove_text_cols = False # this isn't used in in the current form
+                          ):
         """Compare converted RAVE data to double data entry REDCap
 
             Comment:

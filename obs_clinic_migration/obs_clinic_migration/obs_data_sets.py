@@ -28,4 +28,11 @@ redcap_data_dict = pd.read_csv(
     dtype = str,
     #sep = ',',
     #quotechar='"'
-)   
+) 
+
+redcap_clinic = pd.read_csv(
+    Path(__file__).parent/"../../data/raw/redcap_double_data_entry.csv",
+    encoding = 'mbcs', 
+    low_memory = False,
+    dtype = str # temporary addition, see if this is causing issues
+)
