@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 25 14:50:46 2019
-
-@author: moagrzs
-"""
-
 import pandas as pd
 from itertools import compress
 import obs_data_sets
@@ -12,18 +5,13 @@ import obs_data_sets
 num_min_na_subjects = 40
 
 clinic_temp = obs_data_sets.rave_clinic
-# clinic_temp = pd.read_csv(
-#     (#'../data/raw/OBS Flat Output 09SEP2019.csv'
-#         'T:/Dept ObGyn Research/Ontario Birth Study/AHRC/'
-#         'Clinical Data/2019/OBS Flat Output 09SEP2019.csv'
-#     ), encoding = 'mbcs', low_memory = False
-# )
-
 clinic_temp = clinic_temp.loc[clinic_temp['Subject'].astype(int) <= 91299999]
 
 # only review columns with data in them
-col_names = [col_name for col_name in list(clinic_temp.columns.values) 
-            if clinic_temp[col_name].notnull().astype(int).sum() > 0]
+col_names = [
+    col_name for col_name in list(clinic_temp.columns.values) 
+    if clinic_temp[col_name].notnull().astype(int).sum() > 0
+]
 
 # min_na_subjects will contain OBS IDs of relevant subjects (i.e. minimum 
 # number of NAs)
@@ -49,7 +37,6 @@ for _ in range(1, (num_min_na_subjects + 1)):
     ].iloc[0]
 
     # find which columns which have NA's for the min_na_subject 
-    #col_names = list(clinic_temp.columns.values)
     col_names = list(compress(col_names, clinic_temp[
         clinic_temp['Subject'] == min_na_subject
     ].isnull().iloc[0].tolist()))
@@ -64,3 +51,5 @@ for _ in range(1, (num_min_na_subjects + 1)):
     ]
     
     min_na_subjects.append(min_na_subject)
+
+print(min_na_subjects)
