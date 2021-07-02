@@ -1,4 +1,3 @@
-# import code to be tested
 import pandas as pd
 import obs_clinic_migration
 import pytest
@@ -111,12 +110,6 @@ def test_RedcapConv_init(
     for col_name in actual_df.columns.values.tolist():
         assert all(actual_df[col_name] == expected_df_1[col_name])
 
-
-
-def test_pytest_imp():
-    assert True
-
-
 def test_change_str():
     actual = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = {
@@ -163,9 +156,6 @@ def test_change_str():
     for col_name in actual.data.columns.values.tolist():
         assert all(actual.data[col_name] == expected_changed_df[col_name])
     
-
-
-
 param_remove_na = [
     (# replace np.NaN
         {
@@ -366,7 +356,7 @@ param_compare_conv_dde = [
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
                 'incl_main_ga': ['2', '2', '1', '1'], 
                 'incl_main_eng': ['1', '1', '2', '2'],
-                'incl_main_age': ['2', '1', '2', '1'] # difference in last value
+                'incl_main_age': ['2', '1', '2', '1'] # different last value
             }
         ),
         ['incl_main_age'],
@@ -400,7 +390,7 @@ param_compare_conv_dde = [
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
                 'incl_main_ga': ['2', '2', '1', '1'], 
                 'incl_main_eng': ['1', '1', '2', '2'],
-                'incl_main_age': ['2', '1', '2', '1'] # difference in last value
+                'incl_main_age': ['2', '1', '2', '1'] # different last value
             }
         ),
         [],
@@ -409,7 +399,7 @@ param_compare_conv_dde = [
                 'obs_id': ['10100004', '10100004'],
                 'incl_main_ga': ['1', '1'], 
                 'incl_main_eng': ['2', '2'],
-                'incl_main_age': ['1', '2'], # difference in last value
+                'incl_main_age': ['1', '2'], # different last value
                 'Source': ['REDCapDDE', 'RaveConverted']
             }
         )
@@ -435,7 +425,7 @@ param_compare_conv_dde = [
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
                 'incl_main_ga': ['2', '2', '1', '1'], 
                 'incl_main_eng': ['1', '1', '2', '2'],
-                'incl_main_age': ['2', '1', '2', '1'] # difference in last value
+                'incl_main_age': ['2', '1', '2', '1'] # different last value
             }
         ),
         ['incl_main_eng'],
@@ -443,7 +433,7 @@ param_compare_conv_dde = [
             {
                 'obs_id': ['10100004', '10100004'],
                 'incl_main_ga': ['1', '1'],
-                'incl_main_age': ['1', '2'], # difference in last value
+                'incl_main_age': ['1', '2'], # different last value
                 'Source': ['REDCapDDE', 'RaveConverted']
             }
         )
@@ -451,13 +441,15 @@ param_compare_conv_dde = [
 ]
 
 @pytest.mark.parametrize(
-    'ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3, additional_ignore_cols_3, expected_df_3', 
-    param_compare_conv_dde
+    (
+        'ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, '
+        'redcap_dde_3, additional_ignore_cols_3, expected_df_3'
+    ), param_compare_conv_dde
 )
 
-
 def test_compare_conv_dde(
-    ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3, additional_ignore_cols_3, expected_df_3
+    ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3, 
+    additional_ignore_cols_3, expected_df_3
 ):
     initialized_class = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = ref_dict_3, 
@@ -474,11 +466,6 @@ def test_compare_conv_dde(
     
     for col_name in actual_df.columns.values.tolist():
         assert all(actual_df[col_name] == expected_df_3[col_name])
-
-def test_find_cols_issue():
-    assert True
-
-
 
 param_prep_imp = [
     ( # stub_repeat = 0; recode_long = False
@@ -534,7 +521,8 @@ param_prep_imp = [
         ),
         [ # expected columns
             'obs_id', 'redcap_repeat_instance', 'incl_main_ga',
-            'redcap_event_name', 'test_complete_col', 'redcap_repeat_instrument'
+            'redcap_event_name', 'test_complete_col', 
+            'redcap_repeat_instrument'
         ]
     )
 ]
