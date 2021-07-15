@@ -16,76 +16,87 @@ import numpy as np
 import obs_data_sets
 
 class RedcapConv:
-    """[summary]
+    """Class used to convert Rave data to REDCap data
+
+    Attributes
+    ----------
+    data : pandas.dataframe
+        Clinical data derived from the Rave database that is being converted to 
+        the REDCap format
     """
-    
-    
     def __init__(
         self, ravestub_redcap_dict, stub_repeat, 
         master_df = obs_data_sets.rave_clinic, 
         redcap_data_dict = obs_data_sets.redcap_data_dict, 
         recode_long = True
     ):
-        """ Convert Rave dataframe to REDCap
+        """Convert Rave dataframe to REDCap
 
-        Args:
-            ravestub_redcap_dict ([type]): [description]
-            stub_repeat ([type]): [description]
-            master_df ([type], optional): [description]. Defaults to obs_data_sets.rave_clinic.
-            redcap_data_dict ([type], optional): [description]. Defaults to obs_data_sets.redcap_data_dict.
-            recode_long (bool, optional): [description]. Defaults to True.
+        Parameters
+        ----------
+        ravestub_redcap_dict : dict
+            Dictionary which maps the Rave stub columns (keys) to the REDCap 
+            columns (values)
+        stub_repeat : int
+            Maximum number of repeats expected For example, if 
+            stub_repeat = 2, expecting column_x_1 and column_x_2 in Rave
+            dataframe.
+        master_df : pandas.dataframe, optional
+            Dataframe containing the Rave data to be manipulated. It is 
+            expected the dataframe is in the wide format, by default 
+            obs_data_sets.rave_clinic
+        redcap_data_dict : pandas.dataframe, optional
+            Finalized project's data dictionary derived from REDCap, by default
+            obs_data_sets.redcap_data_dict
+        recode_long : bool, optional
+            When True, will execute self._recoded_based_redcap_data_dict 
+            (changes values in df (self.data) columns based on
+            variable coding in redcap_data_dict), by default True
         """
+        # convert relevant data from wide to long depending on 
+        # iterations/stub_repeat
         if stub_repeat == 0:
             rave_long = self._rave_single(ravestub_redcap_dict, master_df)
         elif stub_repeat > 0:
             rave_long = self._rave_wide_long(
                 ravestub_redcap_dict, stub_repeat, master_df
             )
- 
+        # recode values based on REDCap data dictionary
         if recode_long:
             self.data = self._recoded_based_redcap_data_dict(
-    #            ravestub_redcap_dict.values(), 
-                data_dict_df = redcap_data_dict, 
-                rave_long = rave_long
+                data_dict_df = redcap_data_dict, rave_long = rave_long
             )
         else:
             self.data = rave_long
-
-# use 'where' method to modify 'redcap_data_access_group'??? maybe another method
-#https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.where.html
-
-
-        
+   
     @staticmethod
-    def _rave_wide_long(ravestub_redcap_dict, stub_repeat, master_df ):
-        """Convert RAVE dataframe from wide to long with 2 or more occurences.
-        
-        LONGER DESCRIPTION
-        
-        
-        
-        
-        Args:
-            ravestub_redcap_dict: dictionary which maps the RAVE stub columns 
-                (keys) to the REDCap columns (values)
-            stub_repeat: Maximum number of repeats expected For example, if 
-                stub_repeat = 2, expecting column_x_1 and column_x_2 in RAVE
-                dataframe.
-            master_df: Dataframe containing the RAVE data to be manipulated.
-                It is expected the dataframe is in the wide format.
-        
-        Returns:
-            A long dataframe converted from the wide RAVE dataframe. The 
-            dataframe should only contain the columns in the VALUES ARGUMENT 
-            with the addition of 'obs_id' and 'redcap_repeat_instance'. Column
-            values are in 'label' format as opposed to coded as an 'integer'.
-        
-        Comments:
-        # https://stackoverflow.com/questions/50087135/convert-dataframe-from-wide-to-long-pandas
-        # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.wide_to_long.html
-        
-        # used the 'labels' fields, as opposed to the 'raw/coded' fields to minimize 
-        # errors in transcription
+    def _rave_wide_long(ravestub_redcap_dict, stub_repeat, master_df):
+        """Convert and clean Rave data from wide to long with >1 instances
+
+        Subset Rave dataframe, convert to long, remove blank rows, 
+        rename columns, and modify columns
+
+        Parameters
+        ----------
+        ravestub_redcap_dict : dict
+            dictionary which maps the Rave stub columns (keys) to the REDCap 
+            columns (values)
+        stub_repeat : int
+            Maximum number of repeats expected For example, if 
+            stub_repeat = 2, expecting column_x_1 and column_x_2 in Rave
+            dataframe.
+        master_df : pandas.dataframe
+             Dataframe containing the Rave data to be manipulated. It is 
+             expected the dataframe is in the wide format.
+
+        Returns
+        -------
+        pandas.dataframe
+            A long dataframe converted from the wide Rave dataframe. The 
+            dataframe should only contain the columns in the values of 
+            ravestub_redcap_dict with the addition of 'obs_id' and 
+            'redcap_repeat_instance'. Column values are in 'label' format as 
+            opposed to coded as an 'integer'.
         """
         # create list of column names including iterations of stub 
         # (e.g. COL_1, COL_2)
@@ -93,7 +104,8 @@ class RedcapConv:
         for i in range(1, (stub_repeat + 1)):
             for stub_name in ravestub_redcap_dict.keys():
                 df_cols.append(stub_name + str(i))
-                
+        
+        # subset dataframe        
         sub_df = master_df.loc[:, df_cols]
         sub_df = (pd.wide_to_long(
             sub_df, 
@@ -101,7 +113,6 @@ class RedcapConv:
             i = 'Subject', 
             j = 'redcap_repeat_instance'
         ).reset_index())
-        
         
         # remove blank rows after ignoring 'Subject', and 
         # 'redcap_repeat_instance'
@@ -111,114 +122,88 @@ class RedcapConv:
             if col_name not in ['Subject', 'redcap_repeat_instance']
         ]
         sub_df.dropna(subset = sub_df_cols, thresh = 1, inplace = True) 
-
-        # check to see if manipulated file contains the same number of instances 
-        # as function argument
+        
+        # check to see if manipulated file contains the same number of 
+        # instances as function argument
         if (sub_df['redcap_repeat_instance'].max() != stub_repeat):
-            
-            # insert warning instead of exception
-            
-            # throw exception???? if issue with stubs and number of repeats
             print(
                 'max redcap_repeat_instance = ' 
                  + str(sub_df['redcap_repeat_instance'].max())
-                 + '; stub_repeat = ' + str(stub_repeat))
-
+                 + '; stub_repeat = ' + str(stub_repeat)
+            )
+        
+        # modifications
         sub_df.rename(columns = ravestub_redcap_dict, inplace = True)
         sub_df.rename(columns = {'Subject': 'obs_id'}, inplace = True)
-        
-        # added post import DEC2020; check to make sure this still works
         sub_df['redcap_repeat_instance'] = (
             sub_df['redcap_repeat_instance'].astype(str)
         )
         
         return sub_df
     
-    
-# separating redcap and rave columns instead of in one dictionary    
-#    @staticmethod
-#    def _rave_single(stubnames, redcapnames, master_df):
-#        """Single instance RAVE conversion
-#        
-#        """
-#        
-#        '''
-#        convert RAVE data containing only a single instance
-#        '''
-#        
-#        rave_cols = ['Subject']
-#        rave_cols.extend(stubnames)
-#         
-#        sub_df = master_df.loc[:, rave_cols]
-#        
-#        redcap_cols = ['obs_id']
-#        redcap_cols.extend(redcapnames)
-#        
-#        rename_dict = dict(zip(rave_cols, redcap_cols))
-#        
-#        sub_df.rename(columns = rename_dict, inplace = True)
-#        
-#        return rename_dict, sub_df
-
-
     @staticmethod
     def _rave_single(ravestub_redcap_dict, master_df):
-        """Single instance RAVE conversion
-        
-        obtains associated RAVE columns
-        does not record them????
-        
+        """Clean Rave data with single instance
+
+        Subset Rave dataframe, rename columns, and modify columns
+
+        Parameters
+        ----------
+        ravestub_redcap_dict : dict
+            dictionary which maps the Rave stub columns (keys) to the REDCap 
+            columns (values)
+        master_df : pandas.dataframe
+             Dataframe containing the Rave data to be manipulated. It is 
+             expected the dataframe is in the wide format.
+
+        Returns
+        -------
+        pandas.dataframe
+            The dataframe should only contain the columns in the values of 
+            ravestub_redcap_dict with the addition of 'obs_id' and 
+            'redcap_repeat_instance'.
+
+        Notes
+        -----
+        Equivalent to self._rave_wide_long, converting Rave data from wide to 
+        long, with single instance; however, data does not need to be converted
+        to a long format if there is only a single instance.
         """
-        
-        '''
-        convert RAVE data containing only a single instance
-        '''
+        # change column name for consistency with REDCap
         ravestub_redcap_dict['Subject'] = 'obs_id'
-#        rave_cols = ['Subject']
-#        rave_cols.extend(ravestub_redcap_dict.keys())
-#         
-        sub_df = master_df.loc[:, ravestub_redcap_dict.keys()]
-#        
-#        redcap_cols = ['obs_id']
-#        redcap_cols.extend(redcapnames)
-#        
-#        rename_dict = dict(zip(rave_cols, redcap_cols))
         
+        # create a dataframe with only the columns of interest which are 
+        # derived from the ravestub_redcap_dict 
+        sub_df = master_df.loc[:, ravestub_redcap_dict.keys()]
         sub_df.rename(columns = ravestub_redcap_dict, inplace = True)
 
-#        return rename_dict, sub_df        
         return sub_df
 
-                
-
-    
-    
-    
-    
-    
-     
-        
-        
-        
-        
-        # can I remove 'redcapnames' and just derive it from rave_long.columns.values.to_list()?
     def _recoded_based_redcap_data_dict(
-            self, rave_long, 
-            data_dict_df = obs_data_sets.redcap_data_dict
+            self, rave_long, data_dict_df = obs_data_sets.redcap_data_dict
     ):
-        """Recode RAVE long dataframe based on REDcap data dictionary
-        
-        
-        changes values in df (self.data) columns based on variable coding in the REDCap data dictionary
-        
-        Args:
-            
+        """Recode Rave long dataframe based on REDCap data dictionary
+
+        Changes values in df (self.data) columns based on variable coding in 
+        the REDCap data dictionary
+
+        Parameters
+        ----------
+        rave_long : pandas.dataframe
+            dataframe in which values will be changed
+        data_dict_df : pandas.dataframe, optional
+            data dictionary export from REDCap containing variable coding, 
+            by default obs_data_sets.redcap_data_dict
+
+        Returns
+        -------
+        pandas.dataframe
+            Rave data set recoded based on REDCap data dictionary
+
         Notes: 
-            Known issue with '.to_string' method, need to set max_colwidth
-            https://github.com/pandas-dev/pandas/issues/9784 
+        Known issue with '.to_string' method, need to set max_colwidth
+        https://github.com/pandas-dev/pandas/issues/9784 
         """
-        
-        
         redcap_var_names = [
             col_name 
             for col_name in rave_long.columns.values.tolist()
@@ -226,8 +211,6 @@ class RedcapConv:
         ]
 
         for redcap_var_name in redcap_var_names:
-
-
             # get REDCap coding info from data dictionary
             redcap_data_dict_value = data_dict_df.loc[
                 data_dict_df['Variable / Field Name'] == redcap_var_name, 
@@ -239,10 +222,6 @@ class RedcapConv:
                 redcap_data_dict_value_rev = self._redcap_str_dict(
                     redcap_data_dict_value.to_string(index = False)
                 )
-
-            
-            
-            
             
             # only prints value counts if there is a REDCap coding information
                 try:
@@ -251,147 +230,81 @@ class RedcapConv:
                             redcap_data_dict_value_rev
                         )
                     )
-                    
-                    rave_long_counts = rave_long[redcap_var_name].value_counts()
-                    
-                    # print(rave_long_counts)
+                    rave_long_counts = (
+                        rave_long[redcap_var_name].value_counts()
+                    )
+                    # check if any issues
                     for value_count_index in rave_long_counts.index:
-                        #if not self._isint(value_count_index):
                         if not self._isfloat(value_count_index):
-                        #if not isinstance(value_count_index, int):
-                            #print(redcap_var_name, ': ', value_count_index)
-                            print("Column '{}' has an issue with the variable '{}'.".format(redcap_var_name, value_count_index))
+                            print(
+                                (
+                                    "Column '{}', variable '{}' has an issue."
+                                ).format(redcap_var_name, value_count_index)
+                            )
 
                 except Exception as ex:
-                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    template = (
+                        "An exception of type {0} occurred. Arguments:\n{1!r}"
+                    )
                     message = template.format(type(ex).__name__, ex.args)
                     print('\n')
                     print (redcap_var_name)
                     print (message)
-            
-        
-        # temp
         rave_long.replace('nan', np.nan, regex = True, inplace = True)
-        # temp testing
         
         return rave_long  
           
-            
-    # def _isint(self, value):
-    #     try:
-    #         int(value)
-    #         return True
-    #     except ValueError:
-    #         return False
     def _isfloat(self, value):
-        """
-        Comments:
-            float is used instead of int because 'nan' returns true when cast 
-            as float
-        """
+        """Check if value is a 'float' type
+
+        Parameters
+        ----------
+        value : unknown
+            object where type is unknown
+
+        Returns
+        -------
+        boolean
+            Returns True if value is float and False if value is not a float
+
+        Notes
+        -----
+        Float is used instead of int because 'nan' returns true when cast 
+        as float
+       
+        """ 
         try:
             float(value)
             return True
         except ValueError:
             return False
-    
-#    def _check_if_col_only_has_integers(
-#            self, redcapnames, rave_long, data_dict_df = redcap_data_dict
-#    ):
-#        """Recode RAVE long dataframe based on REDcap data dictionary
-#        
-#        Args:
-#            
-#        
-#        
-#        """
-#        
-#        
-#        '''
-#        
-#        changes values in df (self.data) columns based on variable coding in the REDCap data dictionary
-#        '''
-#        for redcapname in redcapnames:
-##            print(redcapname)
-#            
-#            
-#            
-#            redcap_data_dict_value = data_dict_df.loc[
-#                data_dict_df['Variable / Field Name'] == redcapname, 
-#                'Choices, Calculations, OR Slider Labels'
-#            ]
-#            
-#            if not redcap_data_dict_value.isna().bool():
-#                redcap_data_dict_value_rev = self._redcap_str_dict(
-#                    redcap_data_dict_value.to_string(index = False)
-#                )    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-            
-            
-#            # check to see if there is a value for
-#            if not (data_dict_df.loc[
-#                data_dict_df['Variable / Field Name'] == redcapname, 
-#                'Choices, Calculations, OR Slider Labels'
-#                ]
-#                .isna().bool()
-#            ):
-#                redcap_data_dict_value = data_dict_df.loc[
-#                        data_dict_df['Variable / Field Name'] == redcapname, 
-#                        'Choices, Calculations, OR Slider Labels'].to_string(index = False)
-#                redcap_data_dict_value_rev = self._redcap_str_dict(redcap_data_dict_value)
-#                
-#                # only prints value counts if there is a REDCap coding information
-#                try:
-#                    self.data[redcapname] = self.data[redcapname].astype(str).replace(redcap_data_dict_value_rev)
-#                    print(self.data[redcapname].value_counts())
-#                except Exception as ex:
-#                    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-#                    message = template.format(type(ex).__name__, ex.args)
-#                    print('\n')
-#                    print (redcapname)
-#                    print (message)
-##                except TypeError:
-##                    print('TypeError for: ' + redcapname)
-##                else:
-##                    print(str(NameError))
 
-    def _redcap_str_dict2(self, input_str):
-        """Reverse REDCap Data Dictionary string.
-        
+    def _redcap_str_dict(self, input_str):
+        """Create Python dictionary from REDCap data dictionary string
+
         Coding for REDCap variables are stored in the 'Choices, Calculations, 
-        OR Slider Labels' column of the data dictionary. This function reverses
-        the variable coding. 
+        OR Slider Labels' column of the data dictionary. This function converts
+        the string to a dictionary.
 
-    
-        Args:
-            input_str: A string derived from the REDCap data dictionary which 
-                indicates the variable coding. It is expected that the coding 
-                integer and the answer label are separated by a comma and 
-                entries are separated by a bar (e.g. '1, No | 2, Yes').
+        Parameters
+        ----------
+        input_str : string
+            A string derived from the REDCap data dictionary which 
+            indicates the variable coding. It is expected that the coding 
+            integer and the answer label are separated by a comma and 
+            entries are separated by a bar (e.g. '1, No | 2, Yes').
         
-        Returns:
+        Returns
+        -------
+        dictionary
             A dict where the key is the answer label (from input_str) and the 
             value is the associated integer.
-            
-        Comments:
-            Function will process commas in answer label correctly; however,
-            if the answer label contains a bar (|), this will be interpreted
-            as a new entry.
-
+        
+        Notes
+        -----
+        Function will process commas in answer label correctly; however,
+        if the answer label contains a bar (|), this will be interpreted
+        as a new entry.
         """
         str_dict = {}
         val_key_lst = input_str.split(' | ')
@@ -399,157 +312,154 @@ class RedcapConv:
         for val_key in val_key_lst:
             val_key_split_lst = val_key.split(', ', 1)
             
-            str_dict[str(val_key_split_lst[1])] = str(val_key_split_lst[0])
+            str_dict[
+                str(val_key_split_lst[1])
+            ] = str(val_key_split_lst[0]).lstrip()
            
-        return(str_dict)
+        return (str_dict)
     
-    def _redcap_str_dict(self, input_str):
-        
-        """Reverse REDCap Data Dictionary string
-        
-        Coding for REDCap variables are stored in the 'Choices, Calculations, 
-        OR Slider Labels' column of the data dictionary. This function reverses
-        the variable coding. 
+    # def _redcap_str_dict(self, input_str):
+    #     """Create Python dictionary from REDCap data dictionary string
 
-    
-        Args:
-            input_str: A string derived from the REDCap data dictionary which 
-                indicates the variable coding. It is expected that the coding 
-                integer and the answer label are separated by a comma and 
-                entries are separated by a bar (e.g. '1, No | 2, Yes').
-        
-        Returns:
-            A dict where the key is the answer label (from input_str) and the 
-            value is the associated integer.
-            
-        Comments:
-            Function will process commas in answer label correctly; however,
-            if the answer label contains a bar (|), this will be interpreted
-            as a new entry.
+    #     Coding for REDCap variables are stored in the 'Choices, Calculations, 
+    #     OR Slider Labels' column of the data dictionary. This function converts
+    #     the string to a dictionary.
 
-        """
-        str_dict = {}
+    #     Parameters
+    #     ----------
+    #     input_str : string
+    #         A string derived from the REDCap data dictionary which 
+    #         indicates the variable coding. It is expected that the coding 
+    #         integer and the answer label are separated by a comma and 
+    #         entries are separated by a bar (e.g. '1, No | 2, Yes').
+    #     Returns
+    #     -------
+    #     dictionary
+    #         A dict where the key is the answer label (from input_str) and the 
+    #         value is the associated integer.
+    #     Notes
+    #     -----
+    #     Function will process commas in answer label correctly; however,
+    #     if the answer label contains a bar (|), this will be interpreted
+    #     as a new entry.
+    #     """
+    #     str_dict = {}
        
-        dict_val = ""
-        dict_key = ""
+    #     dict_val = ""
+    #     dict_key = ""
         
-        # when value flag is true, loop will add character to dict_val;
-        # when value flage is false, loop will add character to dict_key
-        val_flag = True
+    #     # when value flag is true, loop will add character to dict_val;
+    #     # when value flage is false, loop will add character to dict_key
+    #     val_flag = True
         
-        for char in input_str:
-            if char != '|':
-                if val_flag:
-                    if char != ',':
-                        dict_val = dict_val + char
-                    else:
-                        val_flag = False
-                else:
-                        dict_key = dict_key + char                    
-            else:
-                dict_key = dict_key.strip()
-                dict_val = dict_val.strip()
+    #     for char in input_str:
+    #         if char != '|':
+    #             if val_flag:
+    #                 if char != ',':
+    #                     dict_val = dict_val + char
+    #                 else:
+    #                     val_flag = False
+    #             else:
+    #                     dict_key = dict_key + char                    
+    #         else:
+    #             dict_key = dict_key.strip()
+    #             dict_val = dict_val.strip()
                 
-                str_dict[dict_key] = dict_val
+    #             str_dict[dict_key] = dict_val
                 
-                dict_key = ""
-                dict_val = ""
-                val_flag = True
-        
-        # last key, value pair is not proceeded by a '|' (bar)
-        dict_key = dict_key.strip()
-        dict_val = dict_val.strip()
-        str_dict[dict_key] = dict_val
-        
-        
-        return(str_dict)
-        
-    
+    #             dict_key = ""
+    #             dict_val = ""
+    #             val_flag = True
 
-    
-    #     # str_dict = {}
-       
-    #     # val_key_lst = input_str.split(' |')
+    #     # last key, value pair is not proceeded by a '|' (bar)
+    #     dict_key = dict_key.strip()
+    #     dict_val = dict_val.strip()
+    #     str_dict[dict_key] = dict_val
         
-    #     # for val_key in val_key_lst:
-    #     #     val_key_split_lst = val_key.split(', ', 1)
-            
-    #     #     str_dict[val_key_split_lst[1]] = val_key_split_lst[0]
-            
-    #     #     # dict_val = val_key.split(', ', 1)[0]
-    #     #     # dict_key = val_key.split(', ', 1)[1]
-            
-    #     #     # str_dict[dict_key] = dict_val
-           
-    #     #return(str_dict)
-    
-    def prep_imp(self, event_name, complete_col, repeat_instrument = None
-                 
-                 #access_group, 
-                  
-                 #import_temp,
-                 
-    ):
-        """ Prepare data file for REDCap import
+    #     return (str_dict)
+        
+    def prep_imp(self, event_name, complete_col, repeat_instrument = None):
+        """Prepare data file for REDCap import
 
-        Adds columns necessary to import into REDCap. Also reorganizes columns.
+        Adds columns necessary to import into REDCap and reorganizes columns.
 
-        Notes:
-            Method is performed after double data check as REDCap does it's own 
-            data validation. When attempting to import data into REDCap, won't 
-            be successful if the column names are incorrectly named or ordered.
+        Parameters
+        ----------
+        event_name : str
+            REDCap divides the project into events. They are roughly equivalent
+            to how the Rave data was divided.
+        complete_col : string
+            Name of REDCap column which indicate the status of the event. A 
+            value of 2 indicates event is complete.
+        repeat_instrument : string, optional
+            Name of REDCap column for repeat instances, by default None
 
-        Args:
-            event_name (str): REDCap divides the project into events. They are 
-                roughly equivalent to how the RAVE data was divided.
-            complete_col (str): REDCap has a column to indicate the event is 
-                complete.
-            repeat_instrument (str, optional): REDCap has a column for repeat 
-                instances. Defaults to None.
+        Returns
+        -------
+        None
+        
+        Notes
+        -----
+        Method is performed after double data check as REDCap does it's own 
+        data validation. When attempting to import data into REDCap, won't 
+        be successful if the column names are incorrectly named or ordered.
         """
-        #self.data['redcap_data_access_group'] = access_group
         self.data['redcap_event_name'] = event_name
         self.data[complete_col] = '2'
         if repeat_instrument is not None:
             self.data['redcap_repeat_instrument'] = repeat_instrument
-        
-        # move obs_id column; REDCap raises error if not in the expected order
+        # move obs_id column; REDCap import will raise an error if not in the 
+        # expected order
         obs_col = self.data.pop('obs_id')
         self.data.insert(0, 'obs_id', obs_col)
-        
-        # self.final_df = pd.concat(
-        #     [import_temp, self.data], 
-        #     axis = 1, ignore_index = True, sort = False)
-
-
 
     def change_str(
         self, spelling_dict, data_dict_df = obs_data_sets.redcap_data_dict
     ):
         """Manually change column values after initilizing data set
-        
+
         Manually change the values in processed data set (self.data) which 
         have altered spellings compared to the REDCap data dictioanry and 
         are not automatically updated as a result.
-        
-        Args:
-            spelling_dict: A dictionary of dictionaries. The key of the 
-                outermost dictionary corresponds to a REDCap column where the 
-                data was not processed successfully due to spelling 
-                discrepencies between the RAVE and REDCap database. The value
-                of the outermost dictionary contains a dictionary. The key of
-                thge innermost dictionary correponds to the RAVE answer label
-                spelling and the value of the innermost dictionary corresponds 
-                to the REDcap answer label spelling.
-                For example:
-                {'redcap_column_w_errors': {
-                    'rave_spelling_1': 'redcap_spelling_1',
-                    'rave_spelling_2': 'redcap_spelling_2'
-                    }
+
+        Parameters
+        ----------
+        spelling_dict : dictionary of dictionaries
+            The key of the outermost dictionary corresponds to a REDCap column 
+            where the data was not processed successfully due to spelling 
+            discrepencies between the Rave and REDCap database. The value of
+            the outermost dictionary contains a dictionary. The key of the 
+            innermost dictionary correponds to the Rave answer label spelling 
+            and the value of the innermost dictionary corresponds to the 
+            REDcap answer label spelling.
+            For example:
+            {'redcap_column_w_errors': {
+                'rave_spelling_1': 'redcap_spelling_1',
+                'rave_spelling_2': 'redcap_spelling_2'
                 }
-        
-        Returns:
-            Data frame is modified but nothing is returned
+            }
+        data_dict_df : dictionary, optional
+            REDCap data dictionary that contains REDCap data dictionary string 
+            (see self._redcap_str_dict), by default 
+            obs_data_sets.redcap_data_dict
+
+        Returns
+        -------
+        None
+
+        Example
+        -------
+        >>>self.data['redcap_column_w_errors'].tolist()
+        ['correct_spelling', 'rave_spelling_1', 'rave_spelling_2']
+        >>>self.change_str(
+            {'redcap_column_w_errors': {
+                'rave_spelling_1': 'redcap_spelling_1',
+                'rave_spelling_2': 'redcap_spelling_2'
+                }
+            }
+        )
+        >>>self.data['redcap_column_w_errors'].tolist()
+        ['correct_spelling', 'redcap_spelling_1', 'redcap_spelling_2']
 
         """        
         for key, val in spelling_dict.items():
@@ -581,48 +491,35 @@ class RedcapConv:
                 print (key)
                 print (message)
                 
-    def compare_conv_dde(self, redcap_dde,   
-                          #selected_subjects #probably don't need this; used to identify subjects with minized NA but will use the converted clinic dataframe to subset redcap dataframe
-                          additional_ignore_cols = [],
-                          #data_dict_df = obs_data_sets.redcap_data_dict, # this isn't used in the current form
-                          #remove_text_cols = False # this isn't used in in the current form
-                          ):
-        """Compare converted RAVE data to double data entry REDCap
+    def compare_conv_dde(self, redcap_dde, additional_ignore_cols = []):
+        """Compare converted Rave data to double data entry REDCap
 
-            Comment:
-                sort first by obs_id and then by dataset (where lower index value indiates redcap; higher is rave converted)
+        Parameters
+        ----------
+        redcap_dde : pandas.dataframe
+            Dataframe containing the double data entry REDCap
+        additional_ignore_cols : list, optional
+            Columns to ignore when compare the converted Rave data (self.data) 
+            and the double data entry REDCap (redcap_dde), by default []
+
+        Returns
+        -------
+        pandas.dataframe
         
+        Notes
+        -----
+        sort first by obs_id and then by dataset (where lower index value 
+        indiates redcap; higher is rave converted) to easily locate 
+        # discrepancies
         """
-        
-        # https://docs.python-guide.org/writing/gotchas/
-        # Python’s default arguments are evaluated once when the function is defined, not each time the function is called (like it is in say, Ruby). This means that if you use a mutable default argument and mutate it, you will and have mutated that object for all future calls to the function as well.
-   
-        ignore_cols = []
-        ignore_cols.extend(additional_ignore_cols)
-        
+        # aren't concerned with data type, only values
         # there's probably a better way to do this
         rave_converted = self.data.astype(str)
-        
-        
-        
-        
-        #https://stackoverflow.com/questions/43125729/python-pandas-series-convert-float-to-string-preserving-nulls
-        #redcap_dde[redcap_dde.notnull()] = redcap_dde.astype(str)
+        rave_converted[rave_converted.notnull()] = rave_converted.astype(str)
         redcap_dde = redcap_dde.astype(str)
         
-        # int has trailing zeros
-        #this is the easiest solution to fix, 
-        # I should investigate why some integers receive trailing zeros ans dome don't
-        #redcap_dde[redcap_dde.notnull()] = redcap_dde.str.place('.0', '')
-
-        
-        
-        # I am not sure why I am having issues with the following
-        rave_converted[rave_converted.notnull()] = rave_converted.astype(str)
-        # the following should work though
-        #rave_converted = rave_converted.astype(str)
-        
-        
+        # from redcap_dde, create dataframe containing the subjects and columns 
+        # in both rave_converted and redcap_dde
         subjects_intersect = [
             subject 
             for subject in list(rave_converted['obs_id'])
@@ -633,21 +530,13 @@ class RedcapConv:
             for column in list(redcap_dde.columns.values) 
             if column in list(rave_converted.columns.values)
         ]
-        
-        
         redcap_dde_sub = redcap_dde.loc[
             redcap_dde['obs_id'].isin(subjects_intersect), 
             columns_intersect
         ]
 
-        
-        
         # remove rows which don't have data in them (after excluding 'obs_id')
-        
-        # converts Nan to a string of 'nan'; need to change it back
-        # maybe change to string type later instead of immediately 
         redcap_dde_sub.replace('nan', np.nan, regex = True, inplace = True)
-
         redcap_dde_sub = redcap_dde_sub.dropna(
             subset = [
                 column
@@ -659,219 +548,152 @@ class RedcapConv:
         )
         redcap_dde_sub = redcap_dde_sub.astype(str)
         
+        # only investigate intersecting subjects in converted dataframe
         rave_converted_sub = rave_converted.loc[
             rave_converted['obs_id'].isin(subjects_intersect), 
             columns_intersect
         ]
-        
+
+        # add 'Source' column so origin of discrepancies can be identified and
+        # combine into one dataframe
         rave_converted_sub['Source'] = 'RaveConverted'
-        
         redcap_dde_sub['Source'] = 'REDCapDDE'
         eval_df = redcap_dde_sub.append(
                 rave_converted_sub, ignore_index = True
         )
        
+        # columns to ignore in the comparison
         # remove/ignore columns that are free text (i.e. 'text' in 'Field 
         # Type' in the REDcap data dictionary)
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        # if remove_text_cols:
-            
-        #     eval_cols = [eval_col for eval_col in eval_df.columns.values if eval_col not in ['obs_id', 'redcap_repeat_instance']]
-            
-
-        #     for eval_col in eval_cols:
-
-                
-        #         if (
-
-        #           ((data_dict_df.loc[data_dict_df['Variable / Field Name'] == eval_col, 'Field Type'] == 'text').bool()
-        #           | (data_dict_df.loc[data_dict_df['Variable / Field Name'] == eval_col, 'Field Type'] == 'notes').bool()
-        #           )
-        #         & (data_dict_df.loc[data_dict_df['Variable / Field Name'] == eval_col, 'Text Validation Type OR Show Slider Number'].isna().bool())):
-        #             ignore_cols.append(eval_col)
-                    
-
-
-
-
-
-
-
-
-
-
+        ignore_cols = []
+        ignore_cols.extend(additional_ignore_cols)
         if ignore_cols:
             eval_df.drop(ignore_cols, axis = 1, inplace = True)
 
+        # drop rows that have the same value between Rave and REDCap 
+        # (i.e. are correct) ignoring 'Source'; should only have rows with 
+        # discrepancies
         eval_df.drop_duplicates(
             keep = False, 
             inplace = True, 
             subset = eval_df.columns.difference(['Source'])
         )
         
-        # sort first by obs_id and then by dataset (where lower index value indiates redcap; higher is rave converted)
+        # sort first by obs_id and then by dataset (where lower index value 
+        # indiates redcap; higher is rave converted) to easily locate 
+        # discrepancies
         eval_df['colFromIndex'] = eval_df.index
         eval_df = eval_df.sort_values(by = ['obs_id', 'colFromIndex'])
         eval_df.drop(['colFromIndex'], axis = 1, inplace = True)
         
         return eval_df
+
+
+
+
+
+
+
+
+
+        #data_dict_df = obs_data_sets.redcap_data_dict, # this isn't used in the current form
+        #remove_text_cols = False # this isn't used in in the current form
+
+
+        # https://docs.python-guide.org/writing/gotchas/
+        # Python’s default arguments are evaluated once when the function is defined, not each time the function is called (like it is in say, Ruby). This means that if you use a mutable default argument and mutate it, you will and have mutated that object for all future calls to the function as well.
+        
+        
+        
+        #https://stackoverflow.com/questions/43125729/python-pandas-series-convert-float-to-string-preserving-nulls
+        #redcap_dde[redcap_dde.notnull()] = redcap_dde.astype(str)
+        
+        
+        # int has trailing zeros
+        #this is the easiest solution to fix, 
+        # I should investigate why some integers receive trailing zeros ans dome don't
+        #redcap_dde[redcap_dde.notnull()] = redcap_dde.str.place('.0', '')
+
+        
+        
+        
+        
+        # converts Nan to a string of 'nan'; need to change it back
+        # maybe change to string type later instead of immediately
+        # remove 'nan' and missing values 
+
+
+
+
+
     def remove_na(self):
         """Remove rows that don't contain relevant data
 
-        Removes rows of the processed data frame, excluding 'obs_id' and 
-        'redcap_repeat_instance', which contain only NaN, 'nan' or '0'
+        Removes rows of the processed data frame (self.data), excluding 
+        'obs_id' and 'redcap_repeat_instance', which contain only NaN, 'nan' 
+        or '0'
         
+        Returns
+        -------
+        None
+
         # https://stackoverflow.com/questions/40659212/futurewarning-elementwise-comparison-failed-returning-scalar-but-in-the-futur
         """
         data_w_na = self.data
 
+        # ignore 'obs_id' and 'redcap_repeat_instance'
         relevant_cols = data_w_na.columns[~data_w_na.columns.isin(
             ['obs_id','redcap_repeat_instance']
         )]
         
-        data_wo_na = data_w_na.dropna(subset = list(relevant_cols), how = 'all')
+        # remove NaN columns
+        data_wo_na = data_w_na.dropna(
+            subset = list(relevant_cols), how = 'all'
+        )
         data_wo_cols = data_wo_na[relevant_cols]
-        # still contains 'nan' strings, convert to '0' and remove
-        data_wo_0 = data_wo_na.loc[
-            ~(data_wo_cols.astype(str).replace({'nan': '0'}) == '0').all(axis=1)
+        # still contains 'nan' strings and '0', convert to 'nan' to '0'
+        data_wo_nan = data_wo_na.loc[
+            ~(
+                data_wo_cols.astype(str).replace({'nan': '0'}) == '0'
+            ).all(axis=1)
         ]
-        data_wo = data_wo_0.dropna(subset = list(relevant_cols), how = 'all')
+        #remove both 'nan' and '0'
+        data_wo = data_wo_nan.dropna(subset = list(relevant_cols), how = 'all')
         
         self.data = data_wo
         
         
-    def find_cols_issue(self, redcap_clinic,   # shouldn't this be redcap_clinic instead of redcap_dde
-                        ignore_cols = []):
+    # def find_cols_issue(self, redcap_clinic,   # shouldn't this be redcap_clinic instead of redcap_dde
+    #                     ignore_cols = []):
 
-        """Identify the columns with issues after running compare_conv_dde
+    #     """Identify the columns with issues after running compare_conv_dde
         
         
-        """
-        compare_df = self.compare_conv_dde(redcap_clinic, ignore_cols)
+    #     """
+    #     compare_df = self.compare_conv_dde(redcap_clinic, ignore_cols)
         
-        eval_cols = [
-            eval_col 
-            for eval_col in compare_df.columns.values 
-            if eval_col not in ignore_cols
-            if eval_col not in 'obs_id'
-        ]
+    #     eval_cols = [
+    #         eval_col 
+    #         for eval_col in compare_df.columns.values 
+    #         if eval_col not in ignore_cols
+    #         if eval_col not in 'obs_id'
+    #     ]
         
-        if not compare_df.empty:
-            for obs_id in compare_df['obs_id'].unique():
-                for eval_col in eval_cols:
+    #     if not compare_df.empty:
+    #         for obs_id in compare_df['obs_id'].unique():
+    #             for eval_col in eval_cols:
                   
-                    redcap_clinic_sub_id = redcap_clinic.loc[
-                        redcap_clinic['obs_id'].isin([obs_id]),
-                        ['obs_id', eval_col]
-                    ]
+    #                 redcap_clinic_sub_id = redcap_clinic.loc[
+    #                     redcap_clinic['obs_id'].isin([obs_id]),
+    #                     ['obs_id', eval_col]
+    #                 ]
 
-                    if not self.compare_conv_dde(
-                        redcap_clinic_sub_id, 
-                        ignore_cols
-                    ).empty:
-                        
-                        
-                        #print(str(obs_id), ": ", str(eval_col))
-                        print("Subject '{}' has an issue with the column '{}'.".format(obs_id, eval_col))
+    #                 if not self.compare_conv_dde(
+    #                     redcap_clinic_sub_id, 
+    #                     ignore_cols
+    #                 ).empty:
+
+    #                     #print(str(obs_id), ": ", str(eval_col))
+    #                     print("Subject '{}' has an issue with the column '{}'.".format(obs_id, eval_col))
             
-          
-
-#%% Rave coding to label
-
-# rave_entries = pd.read_excel(
-#     (
-#         'D:/Downloads/WorkFromHome/obs_data_migration/clinic/data/'
-#         'OBS_V2 4_Data Dictionary.xlsx'
-#     ),
-#     sheet_name = 'DataDictionaryEntries',
-#     encoding = 'mbcs', 
-#     dtype = str # temporary addition, see if this is causing issues
-# )
-
-
-# rave_fields = pd.read_excel(
-#     (
-#         'D:/Downloads/WorkFromHome/obs_data_migration/clinic/data/'
-#         'OBS_V2 4_Data Dictionary.xlsx'
-#     ),
-#     sheet_name = 'Fields',
-#     encoding = 'mbcs', 
-#     dtype = str # temporary addition, see if this is causing issues
-# )
-
-
-
-
-
-
-# def rave_code_label_dict(data_dict_name, data_dict_entries_df = rave_entries):
-#     '''Dictionary with RAVE coded (key) and label (value) values
-    
-#     Args:
-#         data_dict_name: name associated with the RAVE coded/label value 
-#         (e.g. "noyes" should return a dictionary with No and Yes values)
-#         data_dict_entries_df: dataframe containing the both the coded and 
-#         labeled info; this should be derived from the RAVE data dictionary 
-#         received from AHRC
-    
-#     Notes:
-#         The "fields" derived from the RAVE data dictionary received from AHRC 
-#         contains two columns with numeric values: "CodedData" and "Ordinal".
-#         The "CodedData" column was designed as the coded value because the 
-#         "OBS Flat Output 09SEP2019.csv" has "TYPEOFTWIN_1" coded with "9" 
-#         corresponding to "Not applicable" and "URINE_DIPSTICK_1" coded with
-#         "9" corresponding to "Not recorded".
-#     '''
-    
-#     sub_data_dict_entried_df = data_dict_entries_df.loc[
-#         data_dict_entries_df['DataDictionaryName'] == data_dict_name,
-#         ['CodedData', 'UserDataString']
-#     ]
-#     final_dict = sub_data_dict_entried_df.set_index(
-#         'CodedData'
-#     )['UserDataString'].to_dict()
-    
-#     return final_dict
-           
-
-# def rave_convert_code_label(
-#         clinic_ser,
-#         data_dict_var,
-#         data_dict_fields_df = rave_fields
-# ):
-
-#     '''RAVE coded column to labelled column
-    
-#     Args:
-#         data_dict_name: name associated with the RAVE coded/label value 
-#         (e.g. "noyes" should return a dictionary with No and Yes values)
-#         data_dict_entries_df: dataframe containing the both the coded and 
-#         labeled info; this should be derived from the RAVE data dictionary 
-#         received from AHRC
-    
-#     Notes:
-#         The "fields" derived from the RAVE data dictionary received from AHRC 
-#         contains two columns with numeric values: "CodedData" and "Ordinal".
-#         The "CodedData" column was designed as the coded value because the 
-#         "OBS Flat Output 09SEP2019.csv" has "TYPEOFTWIN_1" coded with "9" 
-#         corresponding to "Not applicable"
-#     '''
-    
-    
-#     datadictionaryname = data_dict_fields_df.loc[
-#         data_dict_fields_df['VariableOID'] == data_dict_var,
-#         'DataDictionaryName'
-#     ].astype(str)
-    
-#     recoded_ser = clinic_ser.replace(rave_code_label_dict(datadictionaryname))
-    
-#     return recoded_ser
+  
