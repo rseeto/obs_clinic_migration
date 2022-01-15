@@ -1,16 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 22 17:41:45 2020
-
-@author: Ryan Seeto
-"""
-
-# import requests
-# import io
-# import re
-# import glob
-# import os
-# import pyodbc
 import pandas as pd
 import numpy as np
 import obs_data_sets
@@ -317,66 +304,6 @@ class RedcapConv:
             ] = str(val_key_split_lst[0]).lstrip()
            
         return (str_dict)
-    
-    # def _redcap_str_dict(self, input_str):
-    #     """Create Python dictionary from REDCap data dictionary string
-
-    #     Coding for REDCap variables are stored in the 'Choices, Calculations, 
-    #     OR Slider Labels' column of the data dictionary. This function converts
-    #     the string to a dictionary.
-
-    #     Parameters
-    #     ----------
-    #     input_str : string
-    #         A string derived from the REDCap data dictionary which 
-    #         indicates the variable coding. It is expected that the coding 
-    #         integer and the answer label are separated by a comma and 
-    #         entries are separated by a bar (e.g. '1, No | 2, Yes').
-    #     Returns
-    #     -------
-    #     dictionary
-    #         A dict where the key is the answer label (from input_str) and the 
-    #         value is the associated integer.
-    #     Notes
-    #     -----
-    #     Function will process commas in answer label correctly; however,
-    #     if the answer label contains a bar (|), this will be interpreted
-    #     as a new entry.
-    #     """
-    #     str_dict = {}
-       
-    #     dict_val = ""
-    #     dict_key = ""
-        
-    #     # when value flag is true, loop will add character to dict_val;
-    #     # when value flage is false, loop will add character to dict_key
-    #     val_flag = True
-        
-    #     for char in input_str:
-    #         if char != '|':
-    #             if val_flag:
-    #                 if char != ',':
-    #                     dict_val = dict_val + char
-    #                 else:
-    #                     val_flag = False
-    #             else:
-    #                     dict_key = dict_key + char                    
-    #         else:
-    #             dict_key = dict_key.strip()
-    #             dict_val = dict_val.strip()
-                
-    #             str_dict[dict_key] = dict_val
-                
-    #             dict_key = ""
-    #             dict_val = ""
-    #             val_flag = True
-
-    #     # last key, value pair is not proceeded by a '|' (bar)
-    #     dict_key = dict_key.strip()
-    #     dict_val = dict_val.strip()
-    #     str_dict[dict_key] = dict_val
-        
-    #     return (str_dict)
         
     def prep_imp(self, event_name, complete_col, repeat_instrument = None):
         """Prepare data file for REDCap import
@@ -513,7 +440,6 @@ class RedcapConv:
         # discrepancies
         """
         # aren't concerned with data type, only values
-        # there's probably a better way to do this
         rave_converted = self.data.astype(str)
         rave_converted[rave_converted.notnull()] = rave_converted.astype(str)
         redcap_dde = redcap_dde.astype(str)
@@ -588,44 +514,6 @@ class RedcapConv:
         
         return eval_df
 
-
-
-
-
-
-
-
-
-        #data_dict_df = obs_data_sets.redcap_data_dict, # this isn't used in the current form
-        #remove_text_cols = False # this isn't used in in the current form
-
-
-        # https://docs.python-guide.org/writing/gotchas/
-        # Python’s default arguments are evaluated once when the function is defined, not each time the function is called (like it is in say, Ruby). This means that if you use a mutable default argument and mutate it, you will and have mutated that object for all future calls to the function as well.
-        
-        
-        
-        #https://stackoverflow.com/questions/43125729/python-pandas-series-convert-float-to-string-preserving-nulls
-        #redcap_dde[redcap_dde.notnull()] = redcap_dde.astype(str)
-        
-        
-        # int has trailing zeros
-        #this is the easiest solution to fix, 
-        # I should investigate why some integers receive trailing zeros ans dome don't
-        #redcap_dde[redcap_dde.notnull()] = redcap_dde.str.place('.0', '')
-
-        
-        
-        
-        
-        # converts Nan to a string of 'nan'; need to change it back
-        # maybe change to string type later instead of immediately
-        # remove 'nan' and missing values 
-
-
-
-
-
     def remove_na(self):
         """Remove rows that don't contain relevant data
 
@@ -636,8 +524,6 @@ class RedcapConv:
         Returns
         -------
         None
-
-        # https://stackoverflow.com/questions/40659212/futurewarning-elementwise-comparison-failed-returning-scalar-but-in-the-futur
         """
         data_w_na = self.data
 
@@ -661,39 +547,3 @@ class RedcapConv:
         data_wo = data_wo_nan.dropna(subset = list(relevant_cols), how = 'all')
         
         self.data = data_wo
-        
-        
-    # def find_cols_issue(self, redcap_clinic,   # shouldn't this be redcap_clinic instead of redcap_dde
-    #                     ignore_cols = []):
-
-    #     """Identify the columns with issues after running compare_conv_dde
-        
-        
-    #     """
-    #     compare_df = self.compare_conv_dde(redcap_clinic, ignore_cols)
-        
-    #     eval_cols = [
-    #         eval_col 
-    #         for eval_col in compare_df.columns.values 
-    #         if eval_col not in ignore_cols
-    #         if eval_col not in 'obs_id'
-    #     ]
-        
-    #     if not compare_df.empty:
-    #         for obs_id in compare_df['obs_id'].unique():
-    #             for eval_col in eval_cols:
-                  
-    #                 redcap_clinic_sub_id = redcap_clinic.loc[
-    #                     redcap_clinic['obs_id'].isin([obs_id]),
-    #                     ['obs_id', eval_col]
-    #                 ]
-
-    #                 if not self.compare_conv_dde(
-    #                     redcap_clinic_sub_id, 
-    #                     ignore_cols
-    #                 ).empty:
-
-    #                     #print(str(obs_id), ": ", str(eval_col))
-    #                     print("Subject '{}' has an issue with the column '{}'.".format(obs_id, eval_col))
-            
-  
