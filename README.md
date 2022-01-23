@@ -6,13 +6,13 @@ At the inception of the [Ontario Birth Study](http://www.ontariobirthstudy.ca) i
 
 ### Technologies
 * Python
-    * pandas, numpy, jupyter
+    * pandas, numpy, jupyter, pytest
 * Jupyter notebooks
 * Medidata Rave
 * REDCap
 
 ## Featured Notebooks/Analysis/Deliverables
-* [notebooks/01_data_migration_overview.ipynb](notebooks/01_data_migration_overview.ipynb): outlines a broad comprehensive overview of the process including data manipulation, data cleaning, functional testing, and data verification.
+* [notebooks/01_data_migration_overview.ipynb](notebooks/01_data_migration_overview.ipynb): outlines a broad, comprehensive overview of the process including data manipulation, data cleaning, integration testing, and data verification.
 * [notebooks/02_specific_form_changes.ipynb](notebooks/02_specific_form_changes.ipynb): outlines the specific steps associated with modifying Rave data into a format suitable for REDCap. 
 
 ## Contact

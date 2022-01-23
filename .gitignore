@@ -21,10 +21,8 @@ $RECYCLE.BIN/
 .vscode
 
 # Data is proprietary
-data
-
-# Python file which will be converted to notebook
-RAVE_to_REDCap_forms.py
+data/raw/*
+data/processed/*
 
 # tests pycache
 __pycache__
@@ -35,3 +33,6 @@ __pycache__
 
 # contains permission from OBS/SHS to publish on GitHub
 Github_Publication.zip
+
+# rough work
+/notebooks/archive/*
