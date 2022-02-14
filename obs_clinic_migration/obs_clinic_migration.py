@@ -225,8 +225,10 @@ class RedcapConv:
                         if not self._isfloat(value_count_index):
                             print(
                                 (
-                                    "Column '{}', variable '{}' has an issue."
-                                ).format(redcap_var_name, value_count_index)
+                                    f"Column '{redcap_var_name}', "
+                                    "variable '{value_count_index}' has an "
+                                    "issue."
+                                )
                             )
 
                 except Exception as ex:
