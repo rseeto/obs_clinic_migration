@@ -420,7 +420,7 @@ class RedcapConv:
                 print (key)
                 print (message)
 
-    def compare_conv_dde(self, redcap_dde, additional_ignore_cols = []):
+    def compare_conv_dde(self, redcap_dde, additional_ignore_cols = None):
         """Compare converted Rave data to double data entry REDCap
 
         Parameters
@@ -429,7 +429,7 @@ class RedcapConv:
             Dataframe containing the double data entry REDCap
         additional_ignore_cols : list, optional
             Columns to ignore when compare the converted Rave data (self.data)
-            and the double data entry REDCap (redcap_dde), by default []
+            and the double data entry REDCap (redcap_dde), by default None
 
         Returns
         -------
@@ -494,7 +494,8 @@ class RedcapConv:
         # remove/ignore columns that are free text (i.e. 'text' in 'Field
         # Type' in the REDcap data dictionary)
         ignore_cols = []
-        ignore_cols.extend(additional_ignore_cols)
+        if additional_ignore_cols is not None:
+            ignore_cols.extend(additional_ignore_cols)
         if ignore_cols:
             eval_df.drop(ignore_cols, axis = 1, inplace = True)
 
