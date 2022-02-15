@@ -1,19 +1,21 @@
+"""Tests for obs_clinic_migration"""
+
 import pandas as pd
-import obs_clinic_migration
 import pytest
 import numpy as np
+import obs_clinic_migration
 
 param_RedcapCov_init = [
     (# stub_repeat = 0; recode_long = True
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
         },
         0,
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes']
             }
         ),
@@ -21,21 +23,21 @@ param_RedcapCov_init = [
         pd.DataFrame(# expected df
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_ga': ['2', '2', '1', '1'],
                 'incl_main_eng': ['1', '1', '2', '2']
             }
         )
     ),
     ( # stub_repeat = 0; recode_long = False
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
         },
         0,
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes']
             }
         ),
@@ -43,7 +45,7 @@ param_RedcapCov_init = [
         pd.DataFrame(# expected df
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['Yes', 'Yes', 'No', 'No'], 
+                'incl_main_ga': ['Yes', 'Yes', 'No', 'No'],
                 'incl_main_eng': ['No', 'No', 'Yes', 'Yes']
             }
         )
@@ -56,7 +58,7 @@ param_RedcapCov_init = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002'],
-                'col1_1': ['Yes', 'No'], 
+                'col1_1': ['Yes', 'No'],
                 'col1_2': ['Yes', 'No']
             }
         ),
@@ -77,7 +79,7 @@ param_RedcapCov_init = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002'],
-                'col1_1': ['Yes', 'No'], 
+                'col1_1': ['Yes', 'No'],
                 'col1_2': ['Yes', 'No']
             }
         ),
@@ -93,7 +95,7 @@ param_RedcapCov_init = [
 ]
 
 @pytest.mark.parametrize(
-    'ref_dict_1, stub_repeat_1, sample_raw_df_1, recode_bool_1, expected_df_1', 
+    'ref_dict_1, stub_repeat_1, sample_raw_df_1, recode_bool_1, expected_df_1',
     param_RedcapCov_init
 )
 
@@ -101,8 +103,8 @@ def test_RedcapConv_init(
     ref_dict_1, stub_repeat_1, sample_raw_df_1, recode_bool_1, expected_df_1
 ):
     actual_df = obs_clinic_migration.RedcapConv(
-        ravestub_redcap_dict = ref_dict_1, 
-        stub_repeat = stub_repeat_1, 
+        ravestub_redcap_dict = ref_dict_1,
+        stub_repeat = stub_repeat_1,
         master_df = sample_raw_df_1,
         recode_long = recode_bool_1
     ).data
@@ -113,14 +115,14 @@ def test_RedcapConv_init(
 def test_change_str():
     actual = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
-        }, 
-        stub_repeat = 0, 
+        },
+        stub_repeat = 0,
         master_df = pd.DataFrame(
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'NO', 'Noo'], 
+                'col1': ['Yes', 'Yes', 'NO', 'Noo'],
                 'col2': ['No', 'No', 'Yes', 'YES']
             }
         ),
@@ -129,7 +131,7 @@ def test_change_str():
     expected_unchanged_df = pd.DataFrame(
         {
             'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-            'incl_main_ga': ['2', '2', 'NO', 'Noo'], 
+            'incl_main_ga': ['2', '2', 'NO', 'Noo'],
             'incl_main_eng': ['1', '1', '2', 'YES']
         }
     )
@@ -143,30 +145,30 @@ def test_change_str():
         },
         'incl_main_eng': {
             'YES': 'Yes'
-        } 
+        }
     })
     expected_changed_df = pd.DataFrame(
         {
             'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-            'incl_main_ga': ['2', '2', '1', '1'], 
+            'incl_main_ga': ['2', '2', '1', '1'],
             'incl_main_eng': ['1', '1', '2', '2']
         }
     )
     # check that data is corrected
     for col_name in actual.data.columns.values.tolist():
         assert all(actual.data[col_name] == expected_changed_df[col_name])
-    
+
 param_remove_na = [
     (# replace np.NaN
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
         },
         0,
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', np.NaN], 
+                'col1': ['Yes', 'Yes', 'No', np.NaN],
                 'col2': ['No', 'No', 'Yes', np.NaN]
             }
         ),
@@ -174,21 +176,21 @@ param_remove_na = [
         pd.DataFrame(# expected df
             {
                 'obs_id': ['10100001', '10100002', '10100003'],
-                'incl_main_ga': ['2', '2', '1'], 
+                'incl_main_ga': ['2', '2', '1'],
                 'incl_main_eng': ['1', '1', '2']
             }
         )
     ),
     (# replace '0'
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
         },
         0,
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', '0'], 
+                'col1': ['Yes', 'Yes', 'No', '0'],
                 'col2': ['No', 'No', 'Yes', '0']
             }
         ),
@@ -196,21 +198,21 @@ param_remove_na = [
         pd.DataFrame(# expected df
             {
                 'obs_id': ['10100001', '10100002', '10100003'],
-                'incl_main_ga': ['2', '2', '1'], 
+                'incl_main_ga': ['2', '2', '1'],
                 'incl_main_eng': ['1', '1', '2']
             }
         )
     ),
     (# replace np.NaN and '0'
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
         },
         0,
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', np.NaN], 
+                'col1': ['Yes', 'Yes', 'No', np.NaN],
                 'col2': ['No', 'No', 'Yes', '0']
             }
         ),
@@ -218,7 +220,7 @@ param_remove_na = [
         pd.DataFrame(# expected df
             {
                 'obs_id': ['10100001', '10100002', '10100003'],
-                'incl_main_ga': ['2', '2', '1'], 
+                'incl_main_ga': ['2', '2', '1'],
                 'incl_main_eng': ['1', '1', '2']
             }
         )
@@ -231,7 +233,7 @@ param_remove_na = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002'],
-                'col1_1': ['Yes', 'No'], 
+                'col1_1': ['Yes', 'No'],
                 'col1_2': ['Yes', np.NaN]
             }
         ),
@@ -247,7 +249,7 @@ param_remove_na = [
 ]
 
 @pytest.mark.parametrize(
-    'ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, expected_df_2', 
+    'ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, expected_df_2',
     param_remove_na
 )
 
@@ -255,8 +257,8 @@ def test_remove_na(
     ref_dict_2, stub_repeat_2, sample_raw_df_2, recode_bool_2, expected_df_2
 ):
     actual = obs_clinic_migration.RedcapConv(
-        ravestub_redcap_dict = ref_dict_2, 
-        stub_repeat = stub_repeat_2, 
+        ravestub_redcap_dict = ref_dict_2,
+        stub_repeat = stub_repeat_2,
         master_df = sample_raw_df_2,
         recode_long = recode_bool_2
     )
@@ -269,7 +271,7 @@ def test_remove_na(
 param_compare_conv_dde = [
     (# successful conversion, no columns ignored
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng',
             'col3': 'incl_main_age',
         },
@@ -277,7 +279,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes'],
                 'col3': ['Yes', 'No', 'Yes', 'Yes']
             }
@@ -286,7 +288,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# redcap double data entry
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_ga': ['2', '2', '1', '1'],
                 'incl_main_eng': ['1', '1', '2', '2'],
                 'incl_main_age': ['2', '1', '2', '2']
             }
@@ -295,7 +297,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# expected df
             {
                 'obs_id': [],
-                'incl_main_ga': [], 
+                'incl_main_ga': [],
                 'incl_main_eng': [],
                 'incl_main_age': [],
                 'Source': []
@@ -304,7 +306,7 @@ param_compare_conv_dde = [
     ),
     (# successful conversion, 2 columns ignored
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng',
             'col3': 'incl_main_age',
         },
@@ -312,7 +314,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes'],
                 'col3': ['Yes', 'No', 'Yes', 'Yes']
             }
@@ -321,7 +323,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# redcap double data entry
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_ga': ['2', '2', '1', '1'],
                 'incl_main_eng': ['1', '1', '2', '2'],
                 'incl_main_age': ['2', '1', '2', '2']
             }
@@ -337,7 +339,7 @@ param_compare_conv_dde = [
     ),
     (# successful conversion after ignoring column
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng',
             'col3': 'incl_main_age',
         },
@@ -345,7 +347,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes'],
                 'col3': ['Yes', 'No', 'Yes', 'Yes']
             }
@@ -354,7 +356,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# redcap double data entry
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_ga': ['2', '2', '1', '1'],
                 'incl_main_eng': ['1', '1', '2', '2'],
                 'incl_main_age': ['2', '1', '2', '1'] # different last value
             }
@@ -363,7 +365,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# expected df
             {
                 'obs_id': [],
-                'incl_main_ga': [], 
+                'incl_main_ga': [],
                 'incl_main_eng': [],
                 'Source': []
             }
@@ -371,7 +373,7 @@ param_compare_conv_dde = [
     ),
     (# unsuccessful conversion, no columns ignored
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng',
             'col3': 'incl_main_age',
         },
@@ -379,7 +381,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes'],
                 'col3': ['Yes', 'No', 'Yes', 'Yes']
             }
@@ -388,7 +390,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# redcap double data entry
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_ga': ['2', '2', '1', '1'],
                 'incl_main_eng': ['1', '1', '2', '2'],
                 'incl_main_age': ['2', '1', '2', '1'] # different last value
             }
@@ -397,7 +399,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# expected df
             {
                 'obs_id': ['10100004', '10100004'],
-                'incl_main_ga': ['1', '1'], 
+                'incl_main_ga': ['1', '1'],
                 'incl_main_eng': ['2', '2'],
                 'incl_main_age': ['1', '2'], # different last value
                 'Source': ['REDCapDDE', 'RaveConverted']
@@ -406,7 +408,7 @@ param_compare_conv_dde = [
     ),
     (# unsuccessful conversion, columns ignored
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng',
             'col3': 'incl_main_age',
         },
@@ -414,7 +416,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes'],
                 'col3': ['Yes', 'No', 'Yes', 'Yes']
             }
@@ -423,7 +425,7 @@ param_compare_conv_dde = [
         pd.DataFrame(# redcap double data entry
             {
                 'obs_id': ['10100001', '10100002', '10100003', '10100004'],
-                'incl_main_ga': ['2', '2', '1', '1'], 
+                'incl_main_ga': ['2', '2', '1', '1'],
                 'incl_main_eng': ['1', '1', '2', '2'],
                 'incl_main_age': ['2', '1', '2', '1'] # different last value
             }
@@ -448,12 +450,12 @@ param_compare_conv_dde = [
 )
 
 def test_compare_conv_dde(
-    ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3, 
+    ref_dict_3, stub_repeat_3, sample_raw_df_3, recode_bool_3, redcap_dde_3,
     additional_ignore_cols_3, expected_df_3
 ):
     initialized_class = obs_clinic_migration.RedcapConv(
-        ravestub_redcap_dict = ref_dict_3, 
-        stub_repeat = stub_repeat_3, 
+        ravestub_redcap_dict = ref_dict_3,
+        stub_repeat = stub_repeat_3,
         master_df = sample_raw_df_3,
         recode_long = recode_bool_3
     )
@@ -463,21 +465,21 @@ def test_compare_conv_dde(
     )
     # don't care about index
     actual_df.reset_index(drop=True, inplace=True)
-    
+
     for col_name in actual_df.columns.values.tolist():
         assert all(actual_df[col_name] == expected_df_3[col_name])
 
 param_prep_imp = [
     ( # stub_repeat = 0; recode_long = False
         {
-            'col1': 'incl_main_ga', 
+            'col1': 'incl_main_ga',
             'col2': 'incl_main_eng'
         },
         0,
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
-                'col1': ['Yes', 'Yes', 'No', 'No'], 
+                'col1': ['Yes', 'Yes', 'No', 'No'],
                 'col2': ['No', 'No', 'Yes', 'Yes']
             }
         ),
@@ -488,11 +490,11 @@ param_prep_imp = [
         pd.DataFrame(# expected df
             {
                 'redcap_event_name': ['test_event_name'] * 4,
-                'test_complete_col': ['2'] * 4, 
+                'test_complete_col': ['2'] * 4,
             }
         ),
         [ # expected columns
-            'obs_id', 'incl_main_ga', 'incl_main_eng', 
+            'obs_id', 'incl_main_ga', 'incl_main_eng',
             'redcap_event_name', 'test_complete_col'
         ]
     ),
@@ -504,7 +506,7 @@ param_prep_imp = [
         pd.DataFrame(# pandas sample raw df
             {
                 'Subject': ['10100001', '10100002'],
-                'col1_1': ['Yes', 'No'], 
+                'col1_1': ['Yes', 'No'],
                 'col1_2': ['Yes', 'No']
             }
         ),
@@ -521,7 +523,7 @@ param_prep_imp = [
         ),
         [ # expected columns
             'obs_id', 'redcap_repeat_instance', 'incl_main_ga',
-            'redcap_event_name', 'test_complete_col', 
+            'redcap_event_name', 'test_complete_col',
             'redcap_repeat_instrument'
         ]
     )
@@ -536,22 +538,22 @@ param_prep_imp = [
 )
 
 def test_prep_imp(
-    ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, event_name_4, 
+    ref_dict_4, stub_repeat_4, sample_raw_df_4, recode_bool_4, event_name_4,
     complete_col_4, repeat_instrument_4, expected_df_4, expected_cols_4
 ):
     actual = obs_clinic_migration.RedcapConv(
-        ravestub_redcap_dict = ref_dict_4, 
-        stub_repeat = stub_repeat_4, 
+        ravestub_redcap_dict = ref_dict_4,
+        stub_repeat = stub_repeat_4,
         master_df = sample_raw_df_4,
         recode_long = recode_bool_4
     )
     actual.prep_imp(
-        event_name = event_name_4, 
-        complete_col = complete_col_4, 
+        event_name = event_name_4,
+        complete_col = complete_col_4,
         repeat_instrument = repeat_instrument_4
     )
     actual_df = actual.data
-    
+
     for col_name in expected_df_4.columns.values.tolist():
         assert all(actual_df[col_name] == expected_df_4[col_name])
-    assert(actual_df.columns.tolist() == expected_cols_4)
+    assert actual_df.columns.tolist() == expected_cols_4

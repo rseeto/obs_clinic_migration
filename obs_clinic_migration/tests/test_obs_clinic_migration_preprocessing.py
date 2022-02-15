@@ -1,3 +1,5 @@
+"""Tests for obs_clinic_migration_preprocessing"""
+
 import pandas as pd
 import obs_clinic_migration_preprocessing
 import pytest
@@ -21,10 +23,10 @@ def test_rave_date_unknown():
         }
     )
     actual_df = obs_clinic_migration_preprocessing.rave_date_unknown(
-        rave_df = test_df, 
-        date_dependency = 'date_dependency_col_', 
+        rave_df = test_df,
+        date_dependency = 'date_dependency_col_',
         dependency_answer = 'Yes',
-        rave_date_stub = 'date_stub_', 
+        rave_date_stub = 'date_stub_',
         max_occur_num = 3
     )
     expected_df = pd.DataFrame(
@@ -64,12 +66,12 @@ def test_create_specify_col():
     )
 
     actual_df = obs_clinic_migration_preprocessing.create_specify_col(
-      create_col = 'new_specify_col', 
-      coded_col = 'df_code_col', 
-      label_col = 'df_label_col', 
-      label_code = '99', 
+      create_col = 'new_specify_col',
+      coded_col = 'df_code_col',
+      label_col = 'df_label_col',
+      label_code = '99',
       label_ans = 'other',
-      df = test_df  
+      rave_df = test_df
     )
 
     expected_df = pd.DataFrame(# expected df
