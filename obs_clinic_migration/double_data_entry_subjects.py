@@ -1,3 +1,5 @@
+"""Script to generate double data entry subjects"""
+
 from itertools import compress
 import obs_data_sets
 

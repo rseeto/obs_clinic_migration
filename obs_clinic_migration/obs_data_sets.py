@@ -1,3 +1,5 @@
+"""Access raw data to be manipulated during the data migration process"""
+
 from pathlib import Path
 import pandas as pd
 

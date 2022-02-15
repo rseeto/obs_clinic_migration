@@ -1,3 +1,5 @@
+"""Convert Rave data to REDCap format"""
+
 import pandas as pd
 import numpy as np
 import obs_data_sets
