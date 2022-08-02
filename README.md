@@ -12,9 +12,35 @@ from Medidata Rave to [REDCap](https://www.project-redcap.org/) in late 2019. Th
 of migrating data from one electronic data  capture (Medidata Rave) system to  
 another (Research Electronic Data Capture; REDCap).  
 
-### Technologies
+## Project Organization
+------------
+
+    ├── LICENSE
+    ├── README.md
+    ├── data
+    │   ├── processed
+    │   └── raw
+    ├── notebooks
+    │   ├── 01_data_migration_overview.ipynb
+    |   ├── 02_specific_form_changes.ipynb
+    │   └── figures
+    |       └── data-import-warning.png
+    ├── requirements.txt
+    └── obs_clinic_migration
+        ├── __init__.py
+        ├── double_data_entry_subjects.py
+        ├── obs_clinic_migration_preprocessing.py
+        ├── obs_clinic_migration.py
+        ├── obs_data_sets.py
+        └── tests
+            ├── __init__.py
+            ├── test_obs_clinic_migration_preprocessing.py
+            ├── test_obs_clinic_migration.py
+            └── test_results.xml
+
+## Technologies
 * Python
-    * pandas, numpy, jupyter, pytest
+    * pandas, numpy, pytest
 * Jupyter notebooks
 * Medidata Rave
 * REDCap
