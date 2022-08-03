@@ -2,7 +2,6 @@
 
 import pandas as pd
 import obs_clinic_migration_preprocessing
-import pytest
 import numpy as np
 
 def test_rave_date_unknown():
@@ -48,13 +47,6 @@ def test_rave_date_unknown():
             'date_stub_yn_date_3': ['Yes', 'Yes'],
         }
     )
-    # does not check data type due to np.NaN == np.NaN returning false
-    # for col_name in actual_df.columns.values.tolist():
-    #     assert all(
-    #         actual_df[col_name].astype('str') == (
-    #             expected_df[col_name].astype('str')
-    #         )
-    #     )
     assert actual_df.equals(expected_df)
 
 def test_create_specify_col():
@@ -81,11 +73,4 @@ def test_create_specify_col():
             'new_specify_col': [np.NaN, np.NaN, 'uncoded', 'uncoded']
         }
     )
-    # does not check data type due to np.NaN == np.NaN returning false
-    # for col_name in actual_df.columns.values.tolist():
-    #     assert all(
-    #         actual_df[col_name].astype('str') == (
-    #             expected_df[col_name].astype('str')
-    #         )
-    #     )
     assert actual_df.equals(expected_df)
