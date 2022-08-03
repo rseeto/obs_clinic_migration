@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import obs_data_sets
 
+
 class RedcapConv:
     """Class used to convert Rave data to REDCap data
 
@@ -15,9 +16,9 @@ class RedcapConv:
     """
     def __init__(
         self, ravestub_redcap_dict, stub_repeat,
-        master_df = obs_data_sets.rave_clinic,
-        redcap_data_dict = obs_data_sets.redcap_data_dict,
-        recode_long = True
+        master_df=obs_data_sets.rave_clinic,
+        redcap_data_dict=obs_data_sets.redcap_data_dict,
+        recode_long=True
     ):
         """Convert Rave dataframe to REDCap
 
@@ -53,7 +54,7 @@ class RedcapConv:
         # recode values based on REDCap data dictionary
         if recode_long:
             self.data = self._recoded_based_redcap_data_dict(
-                data_dict_df = redcap_data_dict, rave_long = rave_long
+                data_dict_df=redcap_data_dict, rave_long=rave_long
             )
         else:
             self.data = rave_long
@@ -98,9 +99,9 @@ class RedcapConv:
         sub_df = master_df.loc[:, df_cols]
         sub_df = (pd.wide_to_long(
             sub_df,
-            stubnames = ravestub_redcap_dict.keys(),
-            i = 'Subject',
-            j = 'redcap_repeat_instance'
+            stubnames=ravestub_redcap_dict.keys(),
+            i='Subject',
+            j='redcap_repeat_instance'
         ).reset_index())
 
         # remove blank rows after ignoring 'Subject', and
@@ -110,7 +111,7 @@ class RedcapConv:
             for col_name in list(sub_df)
             if col_name not in ['Subject', 'redcap_repeat_instance']
         ]
-        sub_df.dropna(subset = sub_df_cols, thresh = 1, inplace = True)
+        sub_df.dropna(subset=sub_df_cols, thresh=1, inplace=True)
 
         # check to see if manipulated file contains the same number of
         # instances as function argument
@@ -122,8 +123,8 @@ class RedcapConv:
             )
 
         # modifications
-        sub_df.rename(columns = ravestub_redcap_dict, inplace = True)
-        sub_df.rename(columns = {'Subject': 'obs_id'}, inplace = True)
+        sub_df.rename(columns=ravestub_redcap_dict, inplace=True)
+        sub_df.rename(columns={'Subject': 'obs_id'}, inplace=True)
         sub_df['redcap_repeat_instance'] = (
             sub_df['redcap_repeat_instance'].astype(str)
         )
@@ -164,12 +165,12 @@ class RedcapConv:
         # create a dataframe with only the columns of interest which are
         # derived from the ravestub_redcap_dict
         sub_df = master_df.loc[:, ravestub_redcap_dict.keys()]
-        sub_df.rename(columns = ravestub_redcap_dict, inplace = True)
+        sub_df.rename(columns=ravestub_redcap_dict, inplace=True)
 
         return sub_df
 
     def _recoded_based_redcap_data_dict(
-            self, rave_long, data_dict_df = obs_data_sets.redcap_data_dict
+            self, rave_long, data_dict_df=obs_data_sets.redcap_data_dict
     ):
         """Recode Rave long dataframe based on REDCap data dictionary
 
@@ -209,7 +210,7 @@ class RedcapConv:
             # if coding info is avaiable, convert to Python dict
             if not redcap_data_dict_value.isna().bool():
                 redcap_data_dict_value_rev = self._redcap_str_dict(
-                    redcap_data_dict_value.to_string(index = False)
+                    redcap_data_dict_value.to_string(index=False)
                 )
 
             # only prints value counts if there is a REDCap coding information
@@ -239,9 +240,9 @@ class RedcapConv:
                     )
                     message = template.format(type(ex).__name__, ex.args)
                     print('\n')
-                    print (redcap_var_name)
-                    print (message)
-        rave_long.replace('nan', np.nan, regex = True, inplace = True)
+                    print(redcap_var_name)
+                    print(message)
+        rave_long.replace('nan', np.nan, regex=True, inplace=True)
 
         return rave_long
 
@@ -309,7 +310,7 @@ class RedcapConv:
 
         return str_dict
 
-    def prep_imp(self, event_name, complete_col, repeat_instrument = None):
+    def prep_imp(self, event_name, complete_col, repeat_instrument=None):
         """Prepare data file for REDCap import
 
         Adds columns necessary to import into REDCap and reorganizes columns.
@@ -345,7 +346,7 @@ class RedcapConv:
         self.data.insert(0, 'obs_id', obs_col)
 
     def change_str(
-        self, spelling_dict, data_dict_df = obs_data_sets.redcap_data_dict
+        self, spelling_dict, data_dict_df=obs_data_sets.redcap_data_dict
     ):
         """Manually change column values after initilizing data set
 
@@ -397,7 +398,7 @@ class RedcapConv:
             redcap_data_dict_value = data_dict_df.loc[
                 data_dict_df['Variable / Field Name'] == key,
                 'Choices, Calculations, OR Slider Labels'
-            ].to_string(index = False)
+            ].to_string(index=False)
             redcap_data_dict_value_rev = self._redcap_str_dict(
                 redcap_data_dict_value
             )
@@ -410,7 +411,7 @@ class RedcapConv:
                         redcap_data_dict_value_rev
                     )
                 )
-                self.data.replace('nan', np.nan, regex = True, inplace = True)
+                self.data.replace('nan', np.nan, regex=True, inplace=True)
 
                 print(self.data[key].value_counts())
             except Exception as ex:
@@ -418,11 +419,11 @@ class RedcapConv:
                     "An exception of type {0} occurred. Arguments:\n{1!r}"
                 )
                 message = template.format(type(ex).__name__, ex.args)
-                print ('\n')
-                print (key)
-                print (message)
+                print('\n')
+                print(key)
+                print(message)
 
-    def compare_conv_dde(self, redcap_dde, additional_ignore_cols = None):
+    def compare_conv_dde(self, redcap_dde, additional_ignore_cols=None):
         """Compare converted Rave data to double data entry REDCap
 
         Parameters
@@ -466,15 +467,15 @@ class RedcapConv:
         ]
 
         # remove rows which don't have data in them (after excluding 'obs_id')
-        redcap_dde_sub.replace('nan', np.nan, regex = True, inplace = True)
+        redcap_dde_sub.replace('nan', np.nan, regex=True, inplace=True)
         redcap_dde_sub = redcap_dde_sub.dropna(
-            subset = [
+            subset=[
                 column
                 for column in columns_intersect
                 if column not in ['obs_id', 'redcap_repeat_instance']
             ],
-            thresh = 1,
-            inplace = False
+            thresh=1,
+            inplace=False
         )
         redcap_dde_sub = redcap_dde_sub.astype(str)
 
@@ -489,7 +490,7 @@ class RedcapConv:
         rave_converted_sub['Source'] = 'RaveConverted'
         redcap_dde_sub['Source'] = 'REDCapDDE'
         eval_df = redcap_dde_sub.append(
-                rave_converted_sub, ignore_index = True
+                rave_converted_sub, ignore_index=True
         )
 
         # columns to ignore in the comparison
@@ -499,23 +500,23 @@ class RedcapConv:
         if additional_ignore_cols is not None:
             ignore_cols.extend(additional_ignore_cols)
         if ignore_cols:
-            eval_df.drop(ignore_cols, axis = 1, inplace = True)
+            eval_df.drop(ignore_cols, axis=1, inplace=True)
 
         # drop rows that have the same value between Rave and REDCap
         # (i.e. are correct) ignoring 'Source'; should only have rows with
         # discrepancies
         eval_df.drop_duplicates(
-            keep = False,
-            inplace = True,
-            subset = eval_df.columns.difference(['Source'])
+            keep=False,
+            inplace=True,
+            subset=eval_df.columns.difference(['Source'])
         )
 
         # sort first by obs_id and then by dataset (where lower index value
         # indiates redcap; higher is rave converted) to easily locate
         # discrepancies
         eval_df['colFromIndex'] = eval_df.index
-        eval_df = eval_df.sort_values(by = ['obs_id', 'colFromIndex'])
-        eval_df.drop(['colFromIndex'], axis = 1, inplace = True)
+        eval_df = eval_df.sort_values(by=['obs_id', 'colFromIndex'])
+        eval_df.drop(['colFromIndex'], axis=1, inplace=True)
 
         return eval_df
 
@@ -534,12 +535,12 @@ class RedcapConv:
 
         # ignore 'obs_id' and 'redcap_repeat_instance'
         relevant_cols = data_w_na.columns[~data_w_na.columns.isin(
-            ['obs_id','redcap_repeat_instance']
+            ['obs_id', 'redcap_repeat_instance']
         )]
 
         # remove NaN columns
         data_wo_na = data_w_na.dropna(
-            subset = list(relevant_cols), how = 'all'
+            subset=list(relevant_cols), how='all'
         )
         data_wo_cols = data_wo_na[relevant_cols]
         # still contains 'nan' strings and '0', convert to 'nan' to '0'
@@ -548,7 +549,7 @@ class RedcapConv:
                 data_wo_cols.astype(str).replace({'nan': '0'}) == '0'
             ).all(axis=1)
         ]
-        #remove both 'nan' and '0'
-        data_wo = data_wo_nan.dropna(subset = list(relevant_cols), how = 'all')
+        # remove both 'nan' and '0'
+        data_wo = data_wo_nan.dropna(subset=list(relevant_cols), how='all')
 
         self.data = data_wo
