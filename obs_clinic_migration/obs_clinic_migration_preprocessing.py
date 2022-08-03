@@ -2,9 +2,10 @@
 
 import numpy as np
 
+
 def rave_date_unknown(
     rave_df, date_dependency, dependency_answer, rave_date_stub, max_occur_num,
-    year_suffix = 'YYYY_', month_suffix = 'MM_', day_suffix = 'DD_'
+    year_suffix='YYYY_', month_suffix='MM_', day_suffix='DD_'
 ):
     """Add 'date unavailabe' column to RAVE dataframe.
 
@@ -112,8 +113,8 @@ def rave_date_unknown(
 
             rave_df.loc[
                 (
-                    (rave_df
-                        [
+                    (
+                        rave_df[
                             rave_date_known_col_name + str(occur_num)
                         ] == 'Yes'
                     )
@@ -170,4 +171,3 @@ def create_specify_col(
     rave_df.loc[rave_df[coded_col] == label_code, label_col] = label_ans
 
     return rave_df
-   
