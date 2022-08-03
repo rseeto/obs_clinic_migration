@@ -23,6 +23,8 @@ $RECYCLE.BIN/
 # Data is proprietary
 data/raw/*
 data/processed/*
+!data/raw/DATAREADME.md
+!data/processed/DATAREADME.md
 
 # tests pycache
 __pycache__
