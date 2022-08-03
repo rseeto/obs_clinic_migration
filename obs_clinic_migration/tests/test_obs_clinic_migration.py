@@ -105,7 +105,7 @@ def test_RedcapConv_init(
     actual_df = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = ref_dict_1,
         stub_repeat = stub_repeat_1,
-        master_df = sample_raw_df_1,
+        main_df = sample_raw_df_1,
         recode_long = recode_bool_1
     ).data
 
@@ -119,7 +119,7 @@ def test_change_str():
             'col2': 'incl_main_eng'
         },
         stub_repeat = 0,
-        master_df = pd.DataFrame(
+        main_df = pd.DataFrame(
             {
                 'Subject': ['10100001', '10100002', '10100003', '10100004'],
                 'col1': ['Yes', 'Yes', 'NO', 'Noo'],
@@ -259,7 +259,7 @@ def test_remove_na(
     actual = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = ref_dict_2,
         stub_repeat = stub_repeat_2,
-        master_df = sample_raw_df_2,
+        main_df = sample_raw_df_2,
         recode_long = recode_bool_2
     )
     actual.remove_na()
@@ -456,7 +456,7 @@ def test_compare_conv_dde(
     initialized_class = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = ref_dict_3,
         stub_repeat = stub_repeat_3,
-        master_df = sample_raw_df_3,
+        main_df = sample_raw_df_3,
         recode_long = recode_bool_3
     )
     actual_df = initialized_class.compare_conv_dde(
@@ -544,7 +544,7 @@ def test_prep_imp(
     actual = obs_clinic_migration.RedcapConv(
         ravestub_redcap_dict = ref_dict_4,
         stub_repeat = stub_repeat_4,
-        master_df = sample_raw_df_4,
+        main_df = sample_raw_df_4,
         recode_long = recode_bool_4
     )
     actual.prep_imp(

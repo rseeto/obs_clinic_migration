@@ -16,7 +16,7 @@ class RedcapConv:
     """
     def __init__(
         self, ravestub_redcap_dict, stub_repeat,
-        master_df=obs_data_sets.rave_clinic,
+        main_df=obs_data_sets.rave_clinic,
         redcap_data_dict=obs_data_sets.redcap_data_dict,
         recode_long=True
     ):
@@ -31,7 +31,7 @@ class RedcapConv:
             Maximum number of repeats expected For example, if
             stub_repeat = 2, expecting column_x_1 and column_x_2 in Rave
             dataframe.
-        master_df : pandas.dataframe, optional
+        main_df : pandas.dataframe, optional
             Dataframe containing the Rave data to be manipulated. It is
             expected the dataframe is in the wide format, by default
             obs_data_sets.rave_clinic
@@ -46,10 +46,10 @@ class RedcapConv:
         # convert relevant data from wide to long depending on
         # iterations/stub_repeat
         if stub_repeat == 0:
-            rave_long = self._rave_single(ravestub_redcap_dict, master_df)
+            rave_long = self._rave_single(ravestub_redcap_dict, main_df)
         elif stub_repeat > 0:
             rave_long = self._rave_wide_long(
-                ravestub_redcap_dict, stub_repeat, master_df
+                ravestub_redcap_dict, stub_repeat, main_df
             )
         # recode values based on REDCap data dictionary
         if recode_long:
@@ -60,7 +60,7 @@ class RedcapConv:
             self.data = rave_long
 
     @staticmethod
-    def _rave_wide_long(ravestub_redcap_dict, stub_repeat, master_df):
+    def _rave_wide_long(ravestub_redcap_dict, stub_repeat, main_df):
         """Convert and clean Rave data from wide to long with >1 instances
 
         Subset Rave dataframe, convert to long, remove blank rows,
@@ -75,7 +75,7 @@ class RedcapConv:
             Maximum number of repeats expected For example, if
             stub_repeat = 2, expecting column_x_1 and column_x_2 in Rave
             dataframe.
-        master_df : pandas.dataframe
+        main_df : pandas.dataframe
              Dataframe containing the Rave data to be manipulated. It is
              expected the dataframe is in the wide format.
 
@@ -96,7 +96,7 @@ class RedcapConv:
                 df_cols.append(stub_name + str(i))
 
         # subset dataframe
-        sub_df = master_df.loc[:, df_cols]
+        sub_df = main_df.loc[:, df_cols]
         sub_df = (pd.wide_to_long(
             sub_df,
             stubnames=ravestub_redcap_dict.keys(),
@@ -132,7 +132,7 @@ class RedcapConv:
         return sub_df
 
     @staticmethod
-    def _rave_single(ravestub_redcap_dict, master_df):
+    def _rave_single(ravestub_redcap_dict, main_df):
         """Clean Rave data with single instance
 
         Subset Rave dataframe, rename columns, and modify columns
@@ -142,7 +142,7 @@ class RedcapConv:
         ravestub_redcap_dict : dict
             dictionary which maps the Rave stub columns (keys) to the REDCap
             columns (values)
-        master_df : pandas.dataframe
+        main_df : pandas.dataframe
              Dataframe containing the Rave data to be manipulated. It is
              expected the dataframe is in the wide format.
 
@@ -164,7 +164,7 @@ class RedcapConv:
 
         # create a dataframe with only the columns of interest which are
         # derived from the ravestub_redcap_dict
-        sub_df = master_df.loc[:, ravestub_redcap_dict.keys()]
+        sub_df = main_df.loc[:, ravestub_redcap_dict.keys()]
         sub_df.rename(columns=ravestub_redcap_dict, inplace=True)
 
         return sub_df
