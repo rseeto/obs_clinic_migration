@@ -28,8 +28,9 @@ for _ in range(1, (NUM_MIN_NA_SUBJECTS + 1)):
     # column values) the subject has
     clinic_temp['sum_na'] = 0
     for col_name in col_names:
-        clinic_temp['sum_na'] = (clinic_temp['sum_na']
-                                + clinic_temp[col_name].isnull().astype(int))
+        clinic_temp['sum_na'] = (
+            clinic_temp['sum_na'] + clinic_temp[col_name].isnull().astype(int)
+        )
     print(clinic_temp['sum_na'].min())
 
     # find the subject with the lowest number of NA's
