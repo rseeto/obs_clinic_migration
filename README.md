@@ -13,7 +13,6 @@ of migrating data from one electronic data  capture (Medidata Rave) system to
 another (Research Electronic Data Capture; REDCap).  
 
 ## Project Organization
-------------
 
     ├── LICENSE
     ├── README.md
