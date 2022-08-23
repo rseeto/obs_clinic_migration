@@ -27,16 +27,7 @@
             └── test_results.xml
 
 ## Project Description
-
-At the inception of the [Ontario Birth Study](http://www.ontariobirthstudy.ca) in 2013, clinical data was stored on  
-a [Medidata Rave](https://www.medidata.com/en/products/edc/) database.  Medidata Rave was used as it was believed that the  
-Ontario Birth Study data  would be associated with the [Ontario Health Study](https://www.ontariohealthstudy.ca/) on  
-an ongoing basis. Since the Ontario Birth Study is no longer associated with the  
-Ontario Health Study and there were significant limitations with the Medidata  
-Rave database, the Ontario Birth Study decided to move the clinical database  
-from Medidata Rave to [REDCap](https://www.project-redcap.org/) in late 2019. This project documents the process  
-of migrating data from one electronic data  capture (Medidata Rave) system to  
-another (Research Electronic Data Capture; REDCap).  
+At the inception of the [Ontario Birth Study](http://www.ontariobirthstudy.ca) in 2013, clinical data was stored on a [Medidata Rave](https://www.medidata.com/en/products/edc/) database.  Medidata Rave was used as it was believed that the Ontario Birth Study data  would be associated with the [Ontario Health Study](https://www.ontariohealthstudy.ca/) on an ongoing basis. Since the Ontario Birth Study is no longer associated with the Ontario Health Study and there were significant limitations with the Medidata Rave database, the Ontario Birth Study decided to move the clinical database from Medidata Rave to [REDCap](https://www.project-redcap.org/) in late 2019. This project documents the process of migrating data from one electronic data  capture (Medidata Rave) system to another (Research Electronic Data Capture; REDCap).  
 
 ## Technologies
 * Python
